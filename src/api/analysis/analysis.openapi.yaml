@@ -1,0 +1,282 @@
+openapi: 3.0.0
+info:
+  title: TestSense Analysis API
+  version: 1.0.0
+  description: API for managing test analysis requests and results
+
+servers:
+  - url: /api/v1
+    description: Base API path
+
+components:
+  securitySchemes:
+    organizationId:
+      type: apiKey
+      name: x-organization-id
+      in: header
+      description: Organization ID for multi-tenant access
+
+  schemas:
+    AnalysisContext:
+      type: object
+      required:
+        - projectId
+        - testId
+      properties:
+        projectId:
+          type: string
+          description: ID of the project containing the test
+        testId:
+          type: string
+          description: ID of the test to analyze
+        parameters:
+          type: object
+          additionalProperties: true
+          description: Additional parameters for the analysis
+        metadata:
+          type: object
+          properties:
+            environment:
+              type: string
+              description: Environment where the test was run
+            version:
+              type: string
+              description: Version of the test or system
+            tags:
+              type: array
+              items:
+                type: string
+              description: Tags associated with the test
+
+    AnalysisOptions:
+      type: object
+      properties:
+        priority:
+          type: string
+          enum: [low, medium, high]
+          default: medium
+          description: Priority level for the analysis
+        notifyOnCompletion:
+          type: boolean
+          default: false
+          description: Whether to send notifications when analysis completes
+        analysisDepth:
+          type: string
+          enum: [basic, detailed, comprehensive]
+          default: detailed
+          description: Depth level of the analysis
+        includeMetrics:
+          type: array
+          items:
+            type: string
+            enum: [performance, quality, coverage, security]
+          description: Types of metrics to include in the analysis
+
+    AnalysisRequest:
+      type: object
+      required:
+        - context
+      properties:
+        context:
+          $ref: '#/components/schemas/AnalysisContext'
+        options:
+          $ref: '#/components/schemas/AnalysisOptions'
+
+    AnalysisResult:
+      type: object
+      properties:
+        summary:
+          type: string
+          description: Summary of the analysis findings
+        confidence:
+          type: number
+          minimum: 0
+          maximum: 1
+          description: Confidence score of the analysis
+        recommendations:
+          type: array
+          items:
+            type: object
+            properties:
+              title:
+                type: string
+                description: Title of the recommendation
+              description:
+                type: string
+                description: Detailed description of the recommendation
+              priority:
+                type: string
+                enum: [low, medium, high]
+                description: Priority level of the recommendation
+              category:
+                type: string
+                enum: [performance, quality, security, maintainability]
+                description: Category of the recommendation
+              actionable:
+                type: boolean
+                description: Whether the recommendation is actionable
+        metrics:
+          type: object
+          additionalProperties:
+            type: number
+          description: Various metrics from the analysis
+        insights:
+          type: array
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+                enum: [improvement, warning, info]
+                description: Type of insight
+              message:
+                type: string
+                description: Insight message
+              context:
+                type: object
+                additionalProperties: true
+                description: Additional context for the insight
+
+    Analysis:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the analysis
+        orgId:
+          type: string
+          description: Organization ID that owns the analysis
+        status:
+          type: string
+          enum: [pending, processing, completed, failed]
+          description: Current status of the analysis
+        createdAt:
+          type: string
+          format: date-time
+          description: When the analysis was created
+        updatedAt:
+          type: string
+          format: date-time
+          description: When the analysis was last updated
+        context:
+          $ref: '#/components/schemas/AnalysisContext'
+        options:
+          $ref: '#/components/schemas/AnalysisOptions'
+        result:
+          $ref: '#/components/schemas/AnalysisResult'
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+              description: Error message
+            code:
+              type: string
+              description: Error code
+            details:
+              type: object
+              additionalProperties: true
+              description: Additional error details
+
+paths:
+  /analyses:
+    post:
+      summary: Create a new analysis
+      operationId: createAnalysis
+      security:
+        - organizationId: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AnalysisRequest'
+      responses:
+        '202':
+          description: Analysis request accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Analysis'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  details:
+                    type: object
+        '401':
+          description: Unauthorized - Missing or invalid organization ID
+        '500':
+          description: Internal server error
+
+    get:
+      summary: List analyses
+      operationId: listAnalyses
+      security:
+        - organizationId: []
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, processing, completed, failed]
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+        - name: cursor
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of analyses
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Analysis'
+                  nextCursor:
+                    type: string
+        '401':
+          description: Unauthorized - Missing or invalid organization ID
+        '500':
+          description: Internal server error
+
+  /analyses/{analysisId}:
+    get:
+      summary: Get analysis by ID
+      operationId: getAnalysis
+      security:
+        - organizationId: []
+      parameters:
+        - name: analysisId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Analysis details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Analysis'
+        '401':
+          description: Unauthorized - Missing or invalid organization ID
+        '404':
+          description: Analysis not found
+        '500':
+          description: Internal server error
