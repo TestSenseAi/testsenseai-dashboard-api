@@ -31,6 +31,11 @@ const notificationService = new NotificationService();
 const coreService = new CoreAnalysisService();
 
 export class AnalysisService {
+    constructor(
+        private readonly coreAnalysisService: CoreAnalysisService,
+        private readonly notificationService: NotificationService
+    ) {}
+
     public async createAnalysis(orgId: string, request: AnalysisRequest): Promise<Analysis> {
         const analysis: Analysis = {
             ...request,
@@ -45,11 +50,19 @@ export class AnalysisService {
             await analysisStore.set(analysis.id, analysis);
             logger.info('Analysis created', { analysisId: analysis.id, orgId });
 
-            // Start async analysis process
-            this.processAnalysis(analysis).catch(error => {
+            // Start async analysis process without awaiting
+            this.processAnalysis(analysis).catch(async error => {
                 logger.error('Analysis processing failed', { analysisId: analysis.id, error });
+                const errorMessage = error.message || 'Processing failed';
+                await this.updateAnalysisError(analysis.id, {
+                    message: errorMessage,
+                    code: error.name || 'Error',
+                    details: { timestamp: new Date().toISOString() },
+                });
+                await this.notificationService.notifyAnalysisFailed(analysis.orgId, analysis.id, errorMessage);
             });
 
+            // Return the pending analysis immediately
             return analysis;
         } catch (error) {
             logger.error('Failed to create analysis', { error });
@@ -132,7 +145,7 @@ export class AnalysisService {
             await this.updateAnalysisStatus(analysis.id, 'processing');
 
             // Call core service for analysis
-            const result = await coreService.analyzeTest({
+            const result = await this.coreAnalysisService.analyzeTest({
                 projectId: analysis.context.projectId,
                 testId: analysis.context.testId,
                 parameters: analysis.context.parameters,
@@ -144,7 +157,7 @@ export class AnalysisService {
 
             // Send notification if requested
             if (analysis.options?.notifyOnCompletion) {
-                await notificationService.notifyAnalysisComplete(analysis.orgId, analysis.id, {
+                await this.notificationService.notifyAnalysisComplete(analysis.orgId, analysis.id, {
                     summary: result.summary,
                     recommendations: result.recommendations,
                 });
@@ -159,7 +172,7 @@ export class AnalysisService {
             await this.updateAnalysisError(analysis.id, errorDetails);
 
             if (analysis.options?.notifyOnCompletion) {
-                await notificationService.notifyAnalysisFailed(analysis.orgId, analysis.id, errorDetails.message);
+                await this.notificationService.notifyAnalysisFailed(analysis.orgId, analysis.id, errorDetails.message);
             }
 
             throw error;
