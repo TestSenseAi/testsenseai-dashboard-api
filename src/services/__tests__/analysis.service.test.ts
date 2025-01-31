@@ -1,11 +1,9 @@
 /// <reference types="jest" />
 
-import { CoreAnalysisService } from '../core-analysis.service';
 import { NotificationService } from '../notification.service';
 import { AnalysisService } from '../analysis.service';
 import { NotFoundError } from '../../common/errors';
 import { AnalysisRequest } from '../../api/analysis/analysis.types';
-import { InternalError } from '../../common/errors';
 
 // Mock functions
 const mockAnalyzeTest = jest.fn();
@@ -62,9 +60,9 @@ describe('AnalysisService', () => {
         mockGetHealth.mockResolvedValue({ status: 'healthy' });
 
         mockGet.mockReset();
-        mockGet.mockImplementation((id: string) =>
+        mockGet.mockImplementation((analysisId: string) =>
             Promise.resolve({
-                id,
+                id: analysisId,
                 orgId: 'org-123',
                 status: 'pending',
                 createdAt: new Date().toISOString(),
@@ -85,7 +83,7 @@ describe('AnalysisService', () => {
         );
 
         mockSet.mockReset();
-        mockSet.mockImplementation((id: string, data: any) => Promise.resolve());
+        mockSet.mockImplementation((_analysisId: string, _data: any) => Promise.resolve());
 
         service = new AnalysisService();
     });
