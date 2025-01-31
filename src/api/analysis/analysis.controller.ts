@@ -77,7 +77,7 @@ analysisApi.get('/v1/analyses', async (ctx: HttpContext) => {
             return ctx.res.json({ error: 'Unauthorized - Missing or invalid organization ID' });
         }
 
-        const query = ctx.req.query;
+        const { query } = ctx.req;
         const rawStatus = Array.isArray(query['status']) ? query['status'][0] : query['status'];
         const status = rawStatus as AnalysisResult['status'] | undefined;
         const limit = Math.min(
