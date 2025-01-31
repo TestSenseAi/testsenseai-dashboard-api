@@ -15,11 +15,11 @@ interface LogEntry {
   error?: Error;
 }
 
-class Logger {
+export class Logger {
   private static instance: Logger;
   private logLevel: LogLevel = 'info';
 
-  private constructor() {
+  constructor() {
     // Set log level from environment variable
     const envLogLevel = process.env.LOG_LEVEL?.toLowerCase() as LogLevel;
     if (envLogLevel && ['error', 'warn', 'info', 'debug'].includes(envLogLevel)) {
