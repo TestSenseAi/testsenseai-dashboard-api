@@ -27,8 +27,6 @@ interface ListAnalysesResult {
 }
 
 const analysisStore = kv('analyses').allow('get', 'set', 'delete');
-const notificationService = new NotificationService();
-const coreService = new CoreAnalysisService();
 
 export class AnalysisService {
     constructor(

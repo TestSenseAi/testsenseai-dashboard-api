@@ -3,9 +3,11 @@ import { AnalysisService } from '../../services/analysis.service';
 import { AnalysisRequestSchema, AnalysisResult } from './analysis.types';
 import { logger } from '../../common/logger';
 import { NotFoundError } from '../../common/errors';
+import { NotificationService } from '@/services/notification.service';
+import { CoreAnalysisService } from '@/services/core-analysis.service';
 
 const analysisApi = api('analysis');
-const analysisService = new AnalysisService();
+const analysisService = new AnalysisService(new CoreAnalysisService(), new NotificationService());
 
 // Create analysis endpoint
 analysisApi.post('/v1/analyses', async (ctx: HttpContext) => {
