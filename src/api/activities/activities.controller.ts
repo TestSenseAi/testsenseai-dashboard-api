@@ -7,33 +7,33 @@ import { validateQuery, PaginationSchema } from '../common/request-validation';
 const activitiesService = new ActivitiesService();
 
 export async function getActivities(ctx: HttpContext) {
-  try {
-    const authHeader = ctx.req.headers.authorization ? ctx.req.headers.authorization[0] : '';
+    try {
+        const authHeader = ctx.req.headers.authorization ? ctx.req.headers.authorization[0] : '';
 
-    const claims = await validateAuth(authHeader);
-    const orgId = claims.org_id;
+        const claims = await validateAuth(authHeader);
+        const orgId = claims.org_id;
 
-    const query = await validateQuery(PaginationSchema)(ctx);
+        const query = await validateQuery(PaginationSchema)(ctx);
 
-    logger.info('Fetching activities', { organizationId: orgId, query });
+        logger.info('Fetching activities', { organizationId: orgId, query });
 
-    const activities = await activitiesService.getActivities(orgId, query);
+        const activities = await activitiesService.getActivities(orgId, query);
 
-    ctx.res.json({
-      success: true,
-      data: { activities },
-    });
-    return ctx;
-  } catch (error) {
-    logger.error('Failed to get activities', { error });
-    ctx.res.status = 500;
-    ctx.res.json({
-      success: false,
-      error: {
-        code: 'INTERNAL_ERROR',
-        message: 'Failed to get activities',
-      },
-    });
-    return ctx;
-  }
+        ctx.res.json({
+            success: true,
+            data: { activities },
+        });
+        return ctx;
+    } catch (error) {
+        logger.error('Failed to get activities', { error });
+        ctx.res.status = 500;
+        ctx.res.json({
+            success: false,
+            error: {
+                code: 'INTERNAL_ERROR',
+                message: 'Failed to get activities',
+            },
+        });
+        return ctx;
+    }
 }
