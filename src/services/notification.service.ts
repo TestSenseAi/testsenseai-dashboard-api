@@ -16,7 +16,11 @@ interface NotificationPayload {
 export class NotificationService {
   private socket = websocket('realtime');
 
-  public async notifyAnalysisComplete(orgId: string, analysisId: string, result: unknown): Promise<void> {
+  public async notifyAnalysisComplete(
+    orgId: string,
+    analysisId: string,
+    result: unknown,
+  ): Promise<void> {
     try {
       const payload: NotificationPayload = {
         type: 'ANALYSIS_COMPLETE',
@@ -24,8 +28,8 @@ export class NotificationService {
         data: {
           analysisId,
           status: 'completed',
-          result
-        }
+          result,
+        },
       };
 
       await this.notifyOrganization(orgId, payload);
@@ -36,7 +40,11 @@ export class NotificationService {
     }
   }
 
-  public async notifyAnalysisFailed(orgId: string, analysisId: string, error: string): Promise<void> {
+  public async notifyAnalysisFailed(
+    orgId: string,
+    analysisId: string,
+    error: string,
+  ): Promise<void> {
     try {
       const payload: NotificationPayload = {
         type: 'ANALYSIS_FAILED',
@@ -44,8 +52,8 @@ export class NotificationService {
         data: {
           analysisId,
           status: 'failed',
-          error
-        }
+          error,
+        },
       };
 
       await this.notifyOrganization(orgId, payload);
@@ -63,9 +71,7 @@ export class NotificationService {
 
       // Send notification to all connected clients
       await Promise.all(
-        connections.map(connectionId =>
-          this.socket.send(connectionId, JSON.stringify(payload))
-        )
+        connections.map(connectionId => this.socket.send(connectionId, JSON.stringify(payload))),
       );
     } catch (error) {
       logger.error('Failed to notify organization', { orgId, error });
@@ -73,9 +79,8 @@ export class NotificationService {
     }
   }
 
-  private async getOrganizationConnections(orgId: string): Promise<string[]> {
-    // This should be implemented to fetch active WebSocket connections for the organization
-    // For now, return an empty array as it will be handled by the WebSocket controller
+  private async getOrganizationConnections(_orgId: string): Promise<string[]> {
+    // TODO: Implement organization connection tracking
     return [];
   }
 }

@@ -24,12 +24,16 @@ export const rateLimiter = (options: Partial<RateLimitOptions> = {}): HttpMiddle
       // Get user or IP identifier
       let identifier: string;
       try {
-        const authToken = Array.isArray(ctx.req.headers.authorization) ? ctx.req.headers.authorization[0] : ctx.req.headers.authorization;
+        const authToken = Array.isArray(ctx.req.headers.authorization)
+          ? ctx.req.headers.authorization[0]
+          : ctx.req.headers.authorization;
         const claims = await validateAuth(authToken);
         identifier = claims.sub; // Use user ID if authenticated
       } catch {
         // Fallback to IP address if not authenticated
-        identifier = (ctx.req.headers['x-forwarded-for'] || ctx.req.headers['x-real-ip'] || 'unknown')[0];
+        identifier = (ctx.req.headers['x-forwarded-for'] ||
+          ctx.req.headers['x-real-ip'] ||
+          'unknown')[0];
       }
 
       const key = `${opts.keyPrefix}${identifier}`;
@@ -49,7 +53,7 @@ export const rateLimiter = (options: Partial<RateLimitOptions> = {}): HttpMiddle
       if (requestCount > opts.max) {
         ctx.res.headers = {
           'Content-Type': ['application/json'],
-          'Retry-After': [Math.ceil(opts.windowMs / 1000).toString()]
+          'Retry-After': [Math.ceil(opts.windowMs / 1000).toString()],
         };
         ctx.res.status = 429;
         ctx.res.body = JSON.stringify({
@@ -67,7 +71,7 @@ export const rateLimiter = (options: Partial<RateLimitOptions> = {}): HttpMiddle
         ...ctx.res.headers,
         'X-RateLimit-Limit': [opts.max.toString()],
         'X-RateLimit-Remaining': [Math.max(0, opts.max - requestCount).toString()],
-        'X-RateLimit-Reset': [Math.ceil((windowStart + opts.windowMs) / 1000).toString()]
+        'X-RateLimit-Reset': [Math.ceil((windowStart + opts.windowMs) / 1000).toString()],
       };
 
       if (next) {

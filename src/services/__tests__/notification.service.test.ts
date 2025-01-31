@@ -1,6 +1,6 @@
 import { NotificationService } from '../notification.service';
 import { websocket } from '@nitric/sdk';
-import { InternalError } from '../../common/errors';
+// import { InternalError } from '../../common/errors';
 
 jest.mock('@nitric/sdk', () => ({
   websocket: jest.fn(() => ({

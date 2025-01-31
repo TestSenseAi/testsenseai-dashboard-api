@@ -1,4 +1,4 @@
-import { api as createApi, HttpContext } from '@nitric/sdk';
+import { api, HttpContext } from '@nitric/sdk';
 import { z } from 'zod';
 import { errorHandler } from './common/error-handler';
 import { rateLimiter } from './common/rate-limiter';
@@ -13,17 +13,19 @@ import { onMessage } from './websockets/realtime.controller';
 export const ApiResponse = z.object({
   success: z.boolean(),
   data: z.unknown().optional(),
-  error: z.object({
-    code: z.string(),
-    message: z.string(),
-    details: z.unknown().optional(),
-  }).optional(),
+  error: z
+    .object({
+      code: z.string(),
+      message: z.string(),
+      details: z.unknown().optional(),
+    })
+    .optional(),
 });
 
 export type ApiResponse = z.infer<typeof ApiResponse>;
 
 // API Definition with middleware
-export const api = createApi('dashboard', {
+export const createdApi = api('dashboard', {
   middleware: [
     errorHandler,
     rateLimiter({
@@ -34,7 +36,7 @@ export const api = createApi('dashboard', {
 });
 
 // Public endpoints
-api.get('/health', async (ctx: HttpContext) => {
+createdApi.get('/health', async (ctx: HttpContext) => {
   return ctx.res.json({
     success: true,
     data: {
@@ -46,8 +48,10 @@ api.get('/health', async (ctx: HttpContext) => {
 });
 
 // Protected endpoints
-api.get('/me', async (ctx: HttpContext) => {
-  const authToken = Array.isArray(ctx.req.headers.authorization) ? ctx.req.headers.authorization[0] : ctx.req.headers.authorization;
+createdApi.get('/me', async (ctx: HttpContext) => {
+  const authToken = Array.isArray(ctx.req.headers.authorization)
+    ? ctx.req.headers.authorization[0]
+    : ctx.req.headers.authorization;
   const claims = await validateAuth(authToken);
 
   logger.info('User profile accessed', {
@@ -67,11 +71,11 @@ api.get('/me', async (ctx: HttpContext) => {
 });
 
 // Metrics endpoints
-api.get('/metrics/summary', getMetricsSummary);
-api.get('/metrics/trends', getMetricsTrends);
+createdApi.get('/metrics/summary', getMetricsSummary);
+createdApi.get('/metrics/trends', getMetricsTrends);
 
 // Activities endpoints
-api.get('/activities', getActivities);
+createdApi.get('/activities', getActivities);
 
 // WebSocket handling is done through the websocket function in realtime.controller.ts
 

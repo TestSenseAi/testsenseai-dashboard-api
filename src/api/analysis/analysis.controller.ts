@@ -21,7 +21,7 @@ analysisApi.post('/v1/analyses', async (ctx: HttpContext) => {
       ctx.res.status = 400;
       return ctx.res.json({
         error: 'Invalid request body',
-        details: validatedBody.error.issues
+        details: validatedBody.error.issues,
       });
     }
 
@@ -80,7 +80,10 @@ analysisApi.get('/v1/analyses', async (ctx: HttpContext) => {
     const query = ctx.req.query;
     const rawStatus = Array.isArray(query['status']) ? query['status'][0] : query['status'];
     const status = rawStatus as AnalysisResult['status'] | undefined;
-    const limit = Math.min(parseInt(Array.isArray(query['limit']) ? query['limit'][0] : query['limit'] || '10', 10), 100);
+    const limit = Math.min(
+      parseInt(Array.isArray(query['limit']) ? query['limit'][0] : query['limit'] || '10', 10),
+      100,
+    );
     const cursor = Array.isArray(query['cursor']) ? query['cursor'][0] : query['cursor'];
 
     // Validate status if provided

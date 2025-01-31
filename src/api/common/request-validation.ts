@@ -14,22 +14,30 @@ export function validateRequest<T extends z.ZodType>(schema: T) {
     const contentType = ctx.req.headers['content-type'];
 
     if (!contentType || !contentType.includes('application/json')) {
-      throw new ValidationError(new z.ZodError([{
-        code: z.ZodIssueCode.custom,
-        path: [],
-        message: 'Content-Type must be application/json'
-      }]));
+      throw new ValidationError(
+        new z.ZodError([
+          {
+            code: z.ZodIssueCode.custom,
+            path: [],
+            message: 'Content-Type must be application/json',
+          },
+        ]),
+      );
     }
 
     try {
       // In Nitric, the request content is already parsed and available in ctx.req.json()
       body = await ctx.req.json();
     } catch {
-      throw new ValidationError(new z.ZodError([{
-        code: z.ZodIssueCode.custom,
-        path: [],
-        message: 'Invalid JSON body'
-      }]));
+      throw new ValidationError(
+        new z.ZodError([
+          {
+            code: z.ZodIssueCode.custom,
+            path: [],
+            message: 'Invalid JSON body',
+          },
+        ]),
+      );
     }
 
     const result = schema.safeParse(body);

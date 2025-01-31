@@ -9,8 +9,8 @@ interface CoreAnalysisRequest {
   testId: string;
   parameters?: Record<string, any>;
   metadata?: {
-    environment: string;
-    version: string;
+    environment?: string;
+    version?: string;
     tags?: string[];
   };
 }
@@ -43,7 +43,9 @@ export class CoreAnalysisService {
     },
   });
 
-  public async analyzeTest(request: CoreAnalysisRequest): Promise<NonNullable<AnalysisResult['result']>> {
+  public async analyzeTest(
+    request: CoreAnalysisRequest,
+  ): Promise<NonNullable<AnalysisResult['result']>> {
     try {
       logger.info('Calling core analysis service', {
         projectId: request.projectId,

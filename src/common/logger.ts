@@ -47,56 +47,66 @@ class Logger {
   private formatLog(entry: LogEntry): string {
     return JSON.stringify({
       ...entry,
-      error: entry.error ? {
-        name: entry.error.name,
-        message: entry.error.message,
-        stack: entry.error.stack,
-      } : undefined,
+      error: entry.error
+        ? {
+            name: entry.error.name,
+            message: entry.error.message,
+            stack: entry.error.stack,
+          }
+        : undefined,
     });
   }
 
   public error(message: string, context?: LogContext, error?: Error): void {
     if (this.shouldLog('error')) {
-      console.error(this.formatLog({
-        level: 'error',
-        message,
-        timestamp: new Date().toISOString(),
-        context,
-        error,
-      }));
+      console.error(
+        this.formatLog({
+          level: 'error',
+          message,
+          timestamp: new Date().toISOString(),
+          context,
+          error,
+        }),
+      );
     }
   }
 
   public warn(message: string, context?: LogContext): void {
     if (this.shouldLog('warn')) {
-      console.warn(this.formatLog({
-        level: 'warn',
-        message,
-        timestamp: new Date().toISOString(),
-        context,
-      }));
+      console.warn(
+        this.formatLog({
+          level: 'warn',
+          message,
+          timestamp: new Date().toISOString(),
+          context,
+        }),
+      );
     }
   }
 
   public info(message: string, context?: LogContext): void {
     if (this.shouldLog('info')) {
-      console.info(this.formatLog({
-        level: 'info',
-        message,
-        timestamp: new Date().toISOString(),
-        context,
-      }));
+      console.info(
+        this.formatLog({
+          level: 'info',
+          message,
+          timestamp: new Date().toISOString(),
+          context,
+        }),
+      );
     }
   }
 
   public debug(message: string, context?: LogContext): void {
     if (this.shouldLog('debug')) {
-      console.debug(this.formatLog({
-        level: 'debug',
-        message,
-        timestamp: new Date().toISOString(),
-        context,
-      }));
+      console.debug(
+        this.formatLog({
+          level: 'debug',
+          message,
+          timestamp: new Date().toISOString(),
+          context,
+        }),
+      );
     }
   }
 }

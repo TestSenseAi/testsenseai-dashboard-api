@@ -12,7 +12,7 @@ export const errorHandler: HttpMiddleware = async (ctx: HttpContext, next?: Http
 
     if (error instanceof AuthError) {
       ctx.res.headers = {
-        'Content-Type': ['application/json']
+        'Content-Type': ['application/json'],
       };
       ctx.res.status = 401;
       ctx.res.body = JSON.stringify({
@@ -27,7 +27,7 @@ export const errorHandler: HttpMiddleware = async (ctx: HttpContext, next?: Http
 
     if (error instanceof ZodError) {
       ctx.res.headers = {
-        'Content-Type': ['application/json']
+        'Content-Type': ['application/json'],
       };
       ctx.res.status = 400;
       ctx.res.body = JSON.stringify({
@@ -43,7 +43,7 @@ export const errorHandler: HttpMiddleware = async (ctx: HttpContext, next?: Http
 
     // Default error response
     ctx.res.headers = {
-      'Content-Type': ['application/json']
+      'Content-Type': ['application/json'],
     };
     ctx.res.status = 500;
     ctx.res.body = JSON.stringify({

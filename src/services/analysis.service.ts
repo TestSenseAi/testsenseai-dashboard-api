@@ -76,7 +76,10 @@ export class AnalysisService {
     }
   }
 
-  public async listAnalyses(orgId: string, options: ListAnalysesOptions): Promise<ListAnalysesResult> {
+  public async listAnalyses(
+    orgId: string,
+    options: ListAnalysesOptions,
+  ): Promise<ListAnalysesResult> {
     try {
       const { status, limit, cursor } = options;
 
@@ -113,7 +116,7 @@ export class AnalysisService {
         status,
         limit,
         count: items.length,
-        hasMore: !!nextCursor
+        hasMore: !!nextCursor,
       });
 
       return {
@@ -137,6 +140,7 @@ export class AnalysisService {
         testId: analysis.context.testId,
         parameters: analysis.context.parameters,
         metadata: analysis.context.metadata,
+
       });
 
       // Update analysis with results
@@ -144,17 +148,16 @@ export class AnalysisService {
 
       // Send notification if requested
       if (analysis.options?.notifyOnCompletion) {
-        await notificationService.notifyAnalysisComplete(
-          analysis.orgId,
-          analysis.id,
-          { summary: result.summary, recommendations: result.recommendations }
-        );
+        await notificationService.notifyAnalysisComplete(analysis.orgId, analysis.id, {
+          summary: result.summary,
+          recommendations: result.recommendations,
+        });
       }
     } catch (error) {
       const errorDetails = {
         message: error instanceof Error ? error.message : 'Unknown error occurred',
         code: error instanceof Error ? error.name : 'UNKNOWN_ERROR',
-        details: { timestamp: new Date().toISOString() }
+        details: { timestamp: new Date().toISOString() },
       };
 
       await this.updateAnalysisError(analysis.id, errorDetails);
@@ -163,7 +166,7 @@ export class AnalysisService {
         await notificationService.notifyAnalysisFailed(
           analysis.orgId,
           analysis.id,
-          errorDetails.message
+          errorDetails.message,
         );
       }
 
@@ -171,7 +174,10 @@ export class AnalysisService {
     }
   }
 
-  private async updateAnalysisStatus(analysisId: string, status: Analysis['status']): Promise<void> {
+  private async updateAnalysisStatus(
+    analysisId: string,
+    status: Analysis['status'],
+  ): Promise<void> {
     const result = await analysisStore.get(analysisId);
     const stored = result as Analysis | null;
     if (!stored) {
@@ -183,7 +189,10 @@ export class AnalysisService {
     await analysisStore.set(analysisId, stored);
   }
 
-  private async updateAnalysisResult(analysisId: string, result: AnalysisResult['result']): Promise<void> {
+  private async updateAnalysisResult(
+    analysisId: string,
+    result: AnalysisResult['result'],
+  ): Promise<void> {
     const storedResult = await analysisStore.get(analysisId);
     const stored = storedResult as Analysis | null;
     if (!stored) {
@@ -196,7 +205,10 @@ export class AnalysisService {
     await analysisStore.set(analysisId, stored);
   }
 
-  private async updateAnalysisError(analysisId: string, error: AnalysisResult['error']): Promise<void> {
+  private async updateAnalysisError(
+    analysisId: string,
+    error: AnalysisResult['error'],
+  ): Promise<void> {
     const result = await analysisStore.get(analysisId);
     const stored = result as Analysis | null;
     if (!stored) {

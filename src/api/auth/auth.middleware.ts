@@ -1,5 +1,4 @@
-import { HttpContext } from '@nitric/sdk';
-import {jwtDecode} from 'jwt-decode';
+import { jwtDecode } from 'jwt-decode';
 import { z } from 'zod';
 
 // JWT Claims schema
@@ -14,13 +13,16 @@ const JwtClaims = z.object({
 type JwtClaims = z.infer<typeof JwtClaims>;
 
 export class AuthError extends Error {
-  constructor(message: string, public code: string = 'UNAUTHORIZED') {
+  constructor(
+    message: string,
+    public code: string = 'UNAUTHORIZED',
+  ) {
     super(message);
     this.name = 'AuthError';
   }
 }
 
-export async function validateAuth(authToken: string) {
+export async function validateAuth(authToken: string): Promise<JwtClaims> {
   if (!authToken.startsWith('Bearer ')) {
     throw new AuthError('Missing or invalid authorization header');
   }

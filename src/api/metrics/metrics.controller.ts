@@ -7,7 +7,9 @@ import { validateQuery, TimeRangeSchema } from '../common/request-validation';
 const metricsService = new MetricsService();
 
 export async function getMetricsSummary(ctx: HttpContext) {
-  const authToken = Array.isArray(ctx.req.headers.authorization) ? ctx.req.headers.authorization[0] : ctx.req.headers.authorization;
+  const authToken = Array.isArray(ctx.req.headers.authorization)
+    ? ctx.req.headers.authorization[0]
+    : ctx.req.headers.authorization;
   const claims = await validateAuth(authToken);
   const orgId = claims.org_id;
 
@@ -22,7 +24,9 @@ export async function getMetricsSummary(ctx: HttpContext) {
 }
 
 export async function getMetricsTrends(ctx: HttpContext) {
-  const authToken = Array.isArray(ctx.req.headers.authorization) ? ctx.req.headers.authorization[0] : ctx.req.headers.authorization;
+  const authToken = Array.isArray(ctx.req.headers.authorization)
+    ? ctx.req.headers.authorization[0]
+    : ctx.req.headers.authorization;
   const claims = await validateAuth(authToken);
   const orgId = claims.org_id;
 
