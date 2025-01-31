@@ -21,7 +21,7 @@ export function validateRequest<T extends z.ZodType>(schema: T) {
             path: [],
             message: 'Content-Type must be application/json',
           },
-        ]),
+        ])
       );
     }
 
@@ -36,7 +36,7 @@ export function validateRequest<T extends z.ZodType>(schema: T) {
             path: [],
             message: 'Invalid JSON body',
           },
-        ]),
+        ])
       );
     }
 

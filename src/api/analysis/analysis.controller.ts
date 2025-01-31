@@ -82,7 +82,7 @@ analysisApi.get('/v1/analyses', async (ctx: HttpContext) => {
     const status = rawStatus as AnalysisResult['status'] | undefined;
     const limit = Math.min(
       parseInt(Array.isArray(query['limit']) ? query['limit'][0] : query['limit'] || '10', 10),
-      100,
+      100
     );
     const cursor = Array.isArray(query['cursor']) ? query['cursor'][0] : query['cursor'];
 

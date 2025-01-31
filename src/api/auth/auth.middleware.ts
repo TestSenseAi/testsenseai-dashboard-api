@@ -15,7 +15,7 @@ type JwtClaims = z.infer<typeof JwtClaims>;
 export class AuthError extends Error {
   constructor(
     message: string,
-    public code: string = 'UNAUTHORIZED',
+    public code: string = 'UNAUTHORIZED'
   ) {
     super(message);
     this.name = 'AuthError';

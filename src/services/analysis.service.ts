@@ -78,7 +78,7 @@ export class AnalysisService {
 
   public async listAnalyses(
     orgId: string,
-    options: ListAnalysesOptions,
+    options: ListAnalysesOptions
   ): Promise<ListAnalysesResult> {
     try {
       const { status, limit, cursor } = options;
@@ -140,7 +140,6 @@ export class AnalysisService {
         testId: analysis.context.testId,
         parameters: analysis.context.parameters,
         metadata: analysis.context.metadata,
-
       });
 
       // Update analysis with results
@@ -166,7 +165,7 @@ export class AnalysisService {
         await notificationService.notifyAnalysisFailed(
           analysis.orgId,
           analysis.id,
-          errorDetails.message,
+          errorDetails.message
         );
       }
 
@@ -176,7 +175,7 @@ export class AnalysisService {
 
   private async updateAnalysisStatus(
     analysisId: string,
-    status: Analysis['status'],
+    status: Analysis['status']
   ): Promise<void> {
     const result = await analysisStore.get(analysisId);
     const stored = result as Analysis | null;
@@ -191,7 +190,7 @@ export class AnalysisService {
 
   private async updateAnalysisResult(
     analysisId: string,
-    result: AnalysisResult['result'],
+    result: AnalysisResult['result']
   ): Promise<void> {
     const storedResult = await analysisStore.get(analysisId);
     const stored = storedResult as Analysis | null;
@@ -207,7 +206,7 @@ export class AnalysisService {
 
   private async updateAnalysisError(
     analysisId: string,
-    error: AnalysisResult['error'],
+    error: AnalysisResult['error']
   ): Promise<void> {
     const result = await analysisStore.get(analysisId);
     const stored = result as Analysis | null;

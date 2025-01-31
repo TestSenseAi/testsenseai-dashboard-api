@@ -21,7 +21,7 @@ export async function getActivities(ctx: HttpContext) {
 
     ctx.res.json({
       success: true,
-      data: { activities }
+      data: { activities },
     });
     return ctx;
   } catch (error) {
@@ -31,8 +31,8 @@ export async function getActivities(ctx: HttpContext) {
       success: false,
       error: {
         code: 'INTERNAL_ERROR',
-        message: 'Failed to get activities'
-      }
+        message: 'Failed to get activities',
+      },
     });
     return ctx;
   }

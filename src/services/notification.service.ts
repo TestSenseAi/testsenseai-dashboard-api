@@ -19,7 +19,7 @@ export class NotificationService {
   public async notifyAnalysisComplete(
     orgId: string,
     analysisId: string,
-    result: unknown,
+    result: unknown
   ): Promise<void> {
     try {
       const payload: NotificationPayload = {
@@ -43,7 +43,7 @@ export class NotificationService {
   public async notifyAnalysisFailed(
     orgId: string,
     analysisId: string,
-    error: string,
+    error: string
   ): Promise<void> {
     try {
       const payload: NotificationPayload = {
@@ -71,7 +71,7 @@ export class NotificationService {
 
       // Send notification to all connected clients
       await Promise.all(
-        connections.map(connectionId => this.socket.send(connectionId, JSON.stringify(payload))),
+        connections.map(connectionId => this.socket.send(connectionId, JSON.stringify(payload)))
       );
     } catch (error) {
       logger.error('Failed to notify organization', { orgId, error });

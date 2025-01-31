@@ -42,7 +42,7 @@ export const AnalysisResultSchema = z.object({
           priority: z.enum(['low', 'medium', 'high']),
           category: z.enum(['performance', 'quality', 'security', 'maintainability']),
           actionable: z.boolean().default(true),
-        }),
+        })
       ),
       metrics: z.record(z.string(), z.number()).optional(),
       insights: z
@@ -51,7 +51,7 @@ export const AnalysisResultSchema = z.object({
             type: z.enum(['improvement', 'warning', 'info']),
             message: z.string(),
             context: z.record(z.string(), z.any()).optional(),
-          }),
+          })
         )
         .optional(),
     })

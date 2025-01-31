@@ -61,7 +61,7 @@ describe('AnalysisService', () => {
           id: result.id,
           orgId,
           status: 'pending',
-        }),
+        })
       );
     });
   });
@@ -103,7 +103,7 @@ describe('AnalysisService', () => {
       mockGet.mockResolvedValueOnce(mockAnalysis);
 
       await expect(service.getAnalysis('different-org', mockAnalysis.id)).rejects.toThrow(
-        NotFoundError,
+        NotFoundError
       );
       expect(mockGet).toHaveBeenCalledWith(mockAnalysis.id);
     });
@@ -149,7 +149,7 @@ describe('AnalysisService', () => {
       // Mock scanKeys implementation for testing
       jest.spyOn(service as any, 'scanKeys').mockResolvedValue(['analysis-1', 'analysis-2']);
       mockGet.mockImplementation((key: string) =>
-        Promise.resolve(mockAnalyses.find(a => a.id === key)),
+        Promise.resolve(mockAnalyses.find(a => a.id === key))
       );
     });
 

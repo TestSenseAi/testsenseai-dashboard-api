@@ -66,7 +66,7 @@ class Logger {
           timestamp: new Date().toISOString(),
           context,
           error,
-        }),
+        })
       );
     }
   }
@@ -79,7 +79,7 @@ class Logger {
           message,
           timestamp: new Date().toISOString(),
           context,
-        }),
+        })
       );
     }
   }
@@ -92,7 +92,7 @@ class Logger {
           message,
           timestamp: new Date().toISOString(),
           context,
-        }),
+        })
       );
     }
   }
@@ -105,7 +105,7 @@ class Logger {
           message,
           timestamp: new Date().toISOString(),
           context,
-        }),
+        })
       );
     }
   }

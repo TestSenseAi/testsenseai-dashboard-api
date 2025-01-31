@@ -44,7 +44,7 @@ export class CoreAnalysisService {
   });
 
   public async analyzeTest(
-    request: CoreAnalysisRequest,
+    request: CoreAnalysisRequest
   ): Promise<NonNullable<AnalysisResult['result']>> {
     try {
       logger.info('Calling core analysis service', {

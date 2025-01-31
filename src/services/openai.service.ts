@@ -20,7 +20,7 @@ export class OpenAIService {
     options: {
       model?: 'gpt-4' | 'gpt-3.5-turbo';
       temperature?: number;
-    } = {},
+    } = {}
   ): Promise<AnalysisResult> {
     try {
       const { model = 'gpt-4', temperature = 0.7 } = options;
