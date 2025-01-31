@@ -1,8 +1,6 @@
 import { HttpContext } from '@nitric/sdk';
 import { validateAuth } from '../auth/auth.middleware';
-import { errorHandler } from '../common/error-handler';
 import { ActivitiesService } from '../../services/activities.service';
-import { Activity } from './activities.types';
 import { logger } from '../../common/logger';
 import { validateQuery, PaginationSchema } from '../common/request-validation';
 

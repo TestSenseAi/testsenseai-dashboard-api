@@ -67,7 +67,7 @@ export class NotificationService {
   private async notifyOrganization(orgId: string, payload: NotificationPayload): Promise<void> {
     try {
       // Get all connections for the organization
-      const connections = await this.getOrganizationConnections(orgId);
+      const connections = await this.getOrganizationConnections();
 
       // Send notification to all connected clients
       await Promise.all(
@@ -79,7 +79,7 @@ export class NotificationService {
     }
   }
 
-  private async getOrganizationConnections(_orgId: string): Promise<string[]> {
+  private async getOrganizationConnections(): Promise<string[]> {
     // TODO: Implement organization connection tracking
     return [];
   }

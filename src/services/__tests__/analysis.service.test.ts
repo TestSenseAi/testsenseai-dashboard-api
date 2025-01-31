@@ -1,8 +1,6 @@
 /// <reference types="jest" />
 
 import { AnalysisService } from '../analysis.service';
-import { NotificationService } from '../notification.service';
-import { CoreAnalysisService } from '../core-analysis.service';
 import { NotFoundError } from '../../common/errors';
 import { AnalysisRequest } from '../../api/analysis/analysis.types';
 
@@ -18,18 +16,11 @@ jest.mock('@nitric/sdk', () => ({
   })),
 }));
 
-jest.mock('../notification.service');
-jest.mock('../core-analysis.service');
-
 describe('AnalysisService', () => {
   let service: AnalysisService;
-  let _notificationService: jest.Mocked<NotificationService>;
-  let _coreService: jest.Mocked<CoreAnalysisService>;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    _notificationService = new NotificationService() as jest.Mocked<NotificationService>;
-    _coreService = new CoreAnalysisService() as jest.Mocked<CoreAnalysisService>;
     service = new AnalysisService();
   });
 

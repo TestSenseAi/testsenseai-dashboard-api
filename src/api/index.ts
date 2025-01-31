@@ -7,7 +7,6 @@ import { config } from '../config/index';
 import { logger } from '../common/logger';
 import { getMetricsSummary, getMetricsTrends } from './metrics/metrics.controller';
 import { getActivities } from './activities/activities.controller';
-import { onMessage } from './websockets/realtime.controller';
 
 // Common response types
 export const ApiResponse = z.object({
@@ -76,7 +75,5 @@ createdApi.get('/metrics/trends', getMetricsTrends);
 
 // Activities endpoints
 createdApi.get('/activities', getActivities);
-
-// WebSocket handling is done through the websocket function in realtime.controller.ts
 
 // Note: Analysis endpoints are now defined directly in analysis.controller.ts using Nitric's API builder
