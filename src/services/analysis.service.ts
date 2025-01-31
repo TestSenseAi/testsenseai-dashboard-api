@@ -29,10 +29,13 @@ interface ListAnalysesResult {
 const analysisStore = kv('analyses').allow('get', 'set', 'delete');
 
 export class AnalysisService {
-    constructor(
-        private readonly coreAnalysisService: CoreAnalysisService,
-        private readonly notificationService: NotificationService
-    ) {}
+    private readonly coreAnalysisService: CoreAnalysisService;
+    private readonly notificationService: NotificationService;
+
+    constructor(coreAnalysisService: CoreAnalysisService, notificationService: NotificationService) {
+        this.coreAnalysisService = coreAnalysisService;
+        this.notificationService = notificationService;
+    }
 
     public async createAnalysis(orgId: string, request: AnalysisRequest): Promise<Analysis> {
         const analysis: Analysis = {
