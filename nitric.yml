@@ -1,0 +1,60 @@
+name: testsenseai-dashboard-api
+
+resources:
+    apis:
+        - name: dashboard
+          resources:
+              - path: /v1/analyses
+                methods: ['GET', 'POST']
+              - path: /v1/analyses/{analysisId}
+                methods: ['GET']
+              - path: /v1/metrics/summary
+                methods: ['GET']
+              - path: /v1/metrics/trends
+                methods: ['GET']
+              - path: /v1/activities
+                methods: ['GET']
+              - path: /v1/health
+                methods: ['GET']
+              - path: /v1/me
+                methods: ['GET']
+          security:
+              - type: jwt
+                scopes: ['api:access']
+                issuer: ${env.AUTH_ISSUER}
+                audiences: ['${env.AUTH_AUDIENCE}']
+          middleware:
+              cors:
+                  origins: ['${env.CORS_ORIGIN}']
+                  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
+                  allowHeaders: ['Content-Type', 'Authorization', 'x-organization-id']
+                  exposeHeaders: ['Content-Length', 'Content-Type']
+                  maxAge: 600
+                  credentials: true
+
+    keyvalue:
+        - name: analyses
+          description: Store for analysis data
+
+    websockets:
+        - name: realtime
+          description: WebSocket for real-time updates
+          security:
+              - type: jwt
+                scopes: ['api:access']
+                issuer: ${env.AUTH_ISSUER}
+                audiences: ['${env.AUTH_AUDIENCE}']
+          middleware:
+              cors:
+                  origins: ['${env.CORS_ORIGIN}']
+                  allowHeaders: ['Authorization', 'x-organization-id']
+                  credentials: true
+
+    schedules:
+        - name: cleanup
+          description: Cleanup old analyses
+          rate: rate(1 day)
+
+compute:
+    memory: 1024
+    timeout: 30
