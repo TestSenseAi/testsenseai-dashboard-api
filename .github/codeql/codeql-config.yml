@@ -1,0 +1,25 @@
+name: "TestSenseAI Dashboard API CodeQL config"
+
+queries:
+  - uses: security-and-quality
+  - uses: security-extended
+
+paths:
+  - src
+paths-ignore:
+  - node_modules
+  - dist
+  - build
+  - '**/*.test.ts'
+  - '**/*.spec.ts'
+  - '**/__tests__/**'
+  - '**/__mocks__/**'
+
+query-filters:
+  - exclude:
+      problem.severity:
+        - warning
+        - recommendation
+      tags contain: maintainability
+
+security-severity-threshold: medium
