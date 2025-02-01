@@ -3,6 +3,7 @@
     "version": "0.1.0",
     "description": "Dashboard API for TestsenseAI",
     "private": true,
+    "type": "module",
     "scripts": {
         "dev": "nitric start",
         "build": "tsc",
