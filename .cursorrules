@@ -1,0 +1,436 @@
+{
+  "importOrder": [
+    "^@nitric/sdk(.*)$",
+    "^@/apis/(.*)$",
+    "^@/services/(.*)$",
+    "^@/workers/(.*)$",
+    "^@/common/(.*)$",
+    "^[./]"
+  ],
+  "importOrderSeparation": true,
+  "importOrderSortSpecifiers": true,
+  "typescript": {
+    "strictNullChecks": true,
+    "noImplicitAny": true
+  },
+  "exclude": [
+    "node_modules",
+    "dist",
+    ".nitric",
+    "build"
+  ],
+  "formatter": {
+    "indentStyle": "space",
+    "indentSize": 2,
+    "lineWidth": 100
+  },
+  "codeStyle": {
+    "naming": {
+      "files": "kebab-case",
+      "variables": "camelCase",
+      "functions": "camelCase",
+      "classes": "PascalCase",
+      "types": "PascalCase",
+      "constants": "UPPER_CASE",
+      "eventHandlers": "handle[EventName]",
+      "enums": "UPPER_CASE"
+    },
+    "preferences": {
+      "constOverLet": true,
+      "arrowFunctions": true,
+      "asyncAwait": true,
+      "functionOverClass": true,
+      "typesOverInterfaces": true,
+      "earlyReturns": true,
+      "conditionalClasses": true,
+      "functionalStyle": true,
+      "minimalChanges": true,
+      "composability": true,
+      "immutability": true,
+      "pragmaticSolutions": true
+    },
+    "typescript": {
+      "useGenerics": true,
+      "customErrorTypes": true,
+      "strictMode": true,
+      "fullTypeSystem": true
+    }
+  },
+  "bestPractices": {
+    "singleResponsibility": true,
+    "dependencyInjection": true,
+    "pureFunction": true,
+    "errorHandling": {
+      "useCustomErrors": true,
+      "requireLogging": true
+    },
+    "testing": {
+      "unitTestRequired": true,
+      "coverageThreshold": 80
+    }
+  },
+  "documentation": {
+    "requireJSDoc": true,
+    "requireExamples": true,
+    "requireReadme": true
+  },
+  "technicalExpertise": {
+    "llm": {
+      "multiProviderArchitectures": true,
+      "functionalProgramming": true,
+      "typeScriptExpertise": true,
+      "apiDesign": "developer-first"
+    },
+    "backend": {
+      "frameworks": ["Nitric", "NestJS"],
+      "languages": ["TypeScript", "JavaScript"],
+      "serverless": ["AWS Lambda", "AWS API Gateway", "AWS", "Azure Functions", "Google Cloud Functions"],
+      "database": ["DynamoDB", "PostgreSQL"],
+      "security": ["Authentication", "Authorization"]
+    },
+    "devops": {
+      "practices": ["CI/CD", "Monitoring", "Logging"],
+      "cloud": true,
+      "security": true
+    },
+    "qualityAssurance": {
+      "testing": true,
+      "validation": true,
+      "errorHandling": true
+    }
+  },
+  "cleanCode": {
+    "principles": {
+      "readability": {
+        "required": true,
+        "description": "Code should be easy to read, understand, and maintain"
+      },
+      "dryPrinciple": {
+        "required": true,
+        "description": "Don't Repeat Yourself - avoid duplicating code or logic"
+      },
+      "singleResponsibility": {
+        "required": true,
+        "description": "Functions should have one purpose and perform it effectively"
+      },
+      "encapsulation": {
+        "required": true,
+        "description": "Encapsulate nested conditionals into functions"
+      },
+      "continuousRefactoring": {
+        "required": true,
+        "description": "Regularly review and refactor code to improve structure"
+      }
+    },
+    "standards": {
+      "typescript": {
+        "naming": {
+          "variables": "camelCase",
+          "functions": "camelCase",
+          "classes": "PascalCase",
+          "constants": "UPPER_CASE",
+          "files": "kebab-case"
+        },
+        "indentation": "2 spaces",
+        "braces": "same line"
+      }
+    }
+  },
+  "architecturalPatterns": {
+    "multiTenant": {
+      "required": true,
+      "patterns": {
+        "organizationIsolation": true,
+        "dataPartitioning": true,
+        "userContextPropagation": true
+      }
+    },
+    "testGeneration": {
+      "aiPatterns": {
+        "promptTemplates": true,
+        "resultParsing": true,
+        "confidenceScoring": true
+      }
+    },
+    "stateManagement": {
+      "immutablePatterns": true,
+      "atomicOperations": true
+    }
+  },
+  "security": {
+    "authentication": {
+      "jwts": true,
+      "sessionHandling": true,
+      "refreshTokens": true
+    },
+    "authorization": {
+      "rbac": true,
+      "organizationBoundaries": true,
+      "resourceScoping": true
+    },
+    "dataProtection": {
+      "encryption": true,
+      "sanitization": true
+    }
+  },
+  "testAutomation": {
+    "aiGeneration": {
+      "naming": {
+        "testCases": "describe[Feature]When[Condition]",
+        "pageObjects": "[Page]Model",
+        "selectors": "[element]Selector"
+      },
+      "patterns": {
+        "dataSeeding": true,
+        "stateSetup": true,
+        "cleanup": true
+      }
+    }
+  },
+  "nitricSpecific": {
+    "apis": {
+      "naming": {
+        "collections": "[Resource]Collection",
+        "apis": "[Domain]API"
+      },
+      "versioning": {
+        "required": true,
+        "pattern": "v[0-9]+"
+      }
+    },
+    "docs": {
+      "required": true,
+      "directory": "docs/docs",
+      "examplesDirectory": "docs/examples"
+    },
+    "security": {
+      "policies": {
+        "required": true,
+        "perResource": true
+      }
+    }
+  },
+  "monitoring": {
+    "required": true,
+    "metrics": {
+      "testExecution": true,
+      "aiPerformance": true,
+      "userActivity": true
+    },
+    "logging": {
+      "structured": true,
+      "levels": ["error", "warn", "info", "debug"],
+      "context": {
+        "organizationId": true,
+        "userId": true,
+        "correlationId": true
+      }
+    }
+  },
+  "rules": [
+    {
+      "name": "Verify Information",
+      "pattern": "(?i)\\b(assume|assumption|guess|speculate)\\b",
+      "message": "Always verify information before presenting it. Do not make assumptions or speculate without clear evidence."
+    },
+    {
+      "name": "File-by-File Changes",
+      "pattern": "// MULTI-FILE CHANGE:",
+      "message": "Make changes file by file and give me a chance to spot mistakes"
+    },
+    {
+      "name": "No Apologies",
+      "pattern": "(?i)\\b(sorry|apologize|apologies)\\b",
+      "message": "Never use apologies"
+    },
+    {
+      "name": "No Understanding Feedback",
+      "pattern": "(?i)\\b(understand|understood|got it)\\b",
+      "message": "Avoid giving feedback about understanding in comments or documentation"
+    },
+    {
+      "name": "No Whitespace Suggestions",
+      "pattern": "(?i)\\b(whitespace|indentation|spacing)\\b",
+      "message": "Don't suggest whitespace changes"
+    },
+    {
+      "name": "No Summaries",
+      "pattern": "(?i)\\b(summary|summarize|overview)\\b",
+      "message": "Don't summarize changes made"
+    },
+    {
+      "name": "No Inventions",
+      "pattern": "(?i)\\b(suggest|recommendation|propose)\\b",
+      "message": "Don't invent changes other than what's explicitly requested"
+    },
+    {
+      "name": "No Unnecessary Confirmations",
+      "pattern": "(?i)\\b(make sure|confirm|verify|check)\\b",
+      "message": "Don't ask for confirmation of information already provided in the context"
+    },
+    {
+      "name": "Preserve Existing Code",
+      "pattern": "(?i)\\b(remove|delete|eliminate|destroy)\\b",
+      "message": "Don't remove unrelated code or functionalities. Pay attention to preserving existing structures."
+    },
+    {
+      "name": "Single Chunk Edits",
+      "pattern": "(?i)\\b(first|then|next|after that|finally)\\b",
+      "message": "Provide all edits in a single chunk instead of multiple-step instructions or explanations for the same file"
+    },
+    {
+      "name": "No Implementation Checks",
+      "pattern": "(?i)\\b(make sure|verify|check|confirm) (it's|it is|that) (correctly|properly) implemented\\b",
+      "message": "Don't ask the user to verify implementations that are visible in the provided context"
+    },
+    {
+      "name": "No Unnecessary Updates",
+      "pattern": "(?i)\\b(update|change|modify|alter)\\b.*\\bno changes\\b",
+      "message": "Don't suggest updates or changes to files when there are no actual modifications needed"
+    },
+    {
+      "name": "Provide Real File Links",
+      "pattern": "(?i)\\b(file|in)\\b.*\\b(x.md)\\b",
+      "message": "Always provide links to the real files, not x.md"
+    },
+    {
+      "name": "No Previous x.md Consideration",
+      "pattern": "(?i)\\b(previous|earlier|last)\\b.*\\bx.md\\b",
+      "message": "Do not consider any previous x.md files in your memory. Complain if the contents are the same as previous runs."
+    },
+    {
+      "name": "No Current Implementation",
+      "pattern": "(?i)\\b(current|existing)\\s+(implementation|code)\\b",
+      "message": "Don't show or discuss the current implementation unless specifically requested"
+    },
+    {
+      "name": "Check x.md Content",
+      "pattern": "(?i)\\b(file|content|implementation)\\b",
+      "message": "Remember to check the x.md file for the current file contents and implementations"
+    },
+    {
+      "name": "Explicit Variable Names",
+      "pattern": "\\b[a-z]\\b",
+      "message": "Prefer descriptive, explicit variable names over short, ambiguous ones to enhance code readability"
+    },
+    {
+      "name": "Consistent Coding Style",
+      "pattern": "(?i)\\b(style|format|convention)\\b",
+      "message": "Adhere to the existing coding style in the project for consistency"
+    },
+    {
+      "name": "Performance Priority",
+      "pattern": "(?i)\\b(slow|performance|optimize)\\b",
+      "message": "When suggesting changes, consider and prioritize code performance where applicable"
+    },
+    {
+      "name": "Security First",
+      "pattern": "(?i)\\b(security|vulnerability|exploit)\\b",
+      "message": "Always consider security implications when modifying or suggesting code changes"
+    },
+    {
+      "name": "Test Coverage",
+      "pattern": "(?i)\\b(test|spec|coverage)\\b",
+      "message": "Suggest or include appropriate unit tests for new or modified code"
+    },
+    {
+      "name": "Error Handling",
+      "pattern": "(?i)\\b(error|exception|catch|try)\\b",
+      "message": "Implement robust error handling and logging where necessary"
+    },
+    {
+      "name": "Modular Design",
+      "pattern": "(?i)\\b(module|component|service)\\b",
+      "message": "Encourage modular design principles to improve code maintainability and reusability"
+    },
+    {
+      "name": "Version Compatibility",
+      "pattern": "(?i)\\b(version|compatibility|support)\\b",
+      "message": "Ensure suggested changes are compatible with the project's specified language or framework versions"
+    },
+    {
+      "name": "Avoid Magic Numbers",
+      "pattern": "\\b\\d+\\b",
+      "message": "Replace hardcoded values with named constants to improve code clarity and maintainability"
+    },
+    {
+      "name": "Consider Edge Cases",
+      "pattern": "(?i)\\b(edge|case|scenario|handle)\\b",
+      "message": "When implementing logic, always consider and handle potential edge cases"
+    },
+    {
+      "name": "Use Assertions",
+      "pattern": "(?i)\\b(assert|ensure|validate)\\b",
+      "message": "Include assertions wherever possible to validate assumptions and catch potential errors early"
+    },
+    {
+      "name": "DRY Principle",
+      "pattern": "(?i)\\b(duplicate|repeated|copy)\\b",
+      "message": "Follow DRY principle - avoid duplicating code or logic"
+    },
+    {
+      "name": "Function Length",
+      "pattern": "(?i)\\b(long|complex|nested)\\s+(function|method)\\b",
+      "message": "Keep functions short and focused on a single responsibility"
+    },
+    {
+      "name": "Meaningful Comments",
+      "pattern": "(?i)\\b(obvious|redundant|unnecessary)\\s+(comment|documentation)\\b",
+      "message": "Use comments sparingly and make them meaningful - explain the why, not the what"
+    },
+    {
+      "name": "Code Standards",
+      "pattern": "(?i)\\b(convention|standard|style guide)\\b",
+      "message": "Follow established code-writing standards for the language"
+    },
+    {
+      "name": "Continuous Improvement",
+      "pattern": "(?i)\\b(refactor|improve|clean)\\b",
+      "message": "Continuously refactor and improve code quality"
+    },
+    {
+      "name": "Version Control",
+      "pattern": "(?i)\\b(git|commit|branch|merge)\\b",
+      "message": "Use version control effectively to track changes and collaborate"
+    },
+    {
+      "name": "Early Returns",
+      "pattern": "(?i)\\b(nested|condition|if.*else)\\b",
+      "message": "Use early returns to avoid nested conditions and improve readability"
+    },
+    {
+      "name": "Event Handler Naming",
+      "pattern": "(?i)\\b(on|handle)[A-Z]\\w*\\b",
+      "message": "Prefix event handler functions with 'handle' (e.g., handleClick, handleKeyDown)"
+    },
+    {
+      "name": "Constants Over Functions",
+      "pattern": "(?i)\\b(function|const)\\s+[A-Z_]+\\b",
+      "message": "Use constants instead of functions where possible. Define types if applicable"
+    },
+    {
+      "name": "Function Ordering",
+      "pattern": "(?i)\\b(compose|component|menu)\\b",
+      "message": "Order functions with composing functions appearing earlier in the file"
+    },
+    {
+      "name": "TODO Comments",
+      "pattern": "(?i)\\b(bug|suboptimal|todo)\\b",
+      "message": "Add TODO comments for bugs or suboptimal code that needs attention"
+    },
+    {
+      "name": "Minimal Code Changes",
+      "pattern": "(?i)\\b(cleanup|refactor|modify)\\b(?!.*specifically requested)",
+      "message": "Only modify sections related to the task. Avoid unrelated changes"
+    }
+  ],
+  "fileOrganization": {
+    "groupByModule": true,
+    "useIndexFiles": true,
+    "separateConcerns": {
+      "businessLogic": true,
+      "uiComponents": true,
+      "utilities": true
+    }
+  }
+}

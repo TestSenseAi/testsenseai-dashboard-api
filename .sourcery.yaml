@@ -1,0 +1,10 @@
+version: '1'
+
+ignore:
+    - .git
+    - node_modules
+    - dist
+    - build
+    - coverage
+    - docs/docs
+    - .github

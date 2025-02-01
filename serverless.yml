@@ -1,0 +1,85 @@
+name: testsenseai-dashboard-api
+resources:
+  apis:
+    - name: dashboard
+      resources:
+        - path: /v1/analyses
+          methods: ['GET', 'POST']
+        - path: /v1/analyses/{analysisId}
+          methods: ['GET']
+        - path: /v1/metrics/summary
+          methods: ['GET']
+        - path: /v1/metrics/trends
+          methods: ['GET']
+        - path: /v1/activities
+          methods: ['GET']
+        - path: /v1/health
+          methods: ['GET']
+        - path: /v1/me
+          methods: ['GET']
+      security:
+        - type: jwt
+          scopes: ['api:access']
+          issuer: ${env.AUTH_ISSUER}
+          audiences: ['${env.AUTH_AUDIENCE}']
+      middleware:
+        cors:
+          origins: ['${env.CORS_ORIGIN}']
+          methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
+          allowHeaders: ['Content-Type', 'Authorization', 'x-organization-id']
+          exposeHeaders: ['Content-Length', 'Content-Type']
+          maxAge: 600
+          credentials: true
+
+  keyvalue:
+    - name: analyses
+      description: Store for analysis data
+
+  websockets:
+    - name: realtime
+      description: WebSocket for real-time updates
+
+  schedules:
+    - name: cleanup
+      description: Cleanup old analyses
+      rate: rate(1 day)
+
+environment:
+  NODE_ENV: ${env.NODE_ENV}
+  PORT: ${env.PORT}
+  AUTH_ISSUER: ${env.AUTH_ISSUER}
+  AUTH_AUDIENCE: ${env.AUTH_AUDIENCE}
+  AUTH_TOKEN_EXPIRATION: ${env.AUTH_TOKEN_EXPIRATION}
+  REDIS_URL: ${env.REDIS_URL}
+  REDIS_TTL_SHORT: ${env.REDIS_TTL_SHORT}
+  REDIS_TTL_MEDIUM: ${env.REDIS_TTL_MEDIUM}
+  REDIS_TTL_LONG: ${env.REDIS_TTL_LONG}
+  RATE_LIMIT_WINDOW: ${env.RATE_LIMIT_WINDOW}
+  RATE_LIMIT_MAX: ${env.RATE_LIMIT_MAX}
+  LOG_LEVEL: ${env.LOG_LEVEL}
+  LOG_PRETTY: ${env.LOG_PRETTY}
+  CORS_ORIGIN: ${env.CORS_ORIGIN}
+  OPENAI_API_KEY: ${env.OPENAI_API_KEY}
+  OPENAI_MODEL: ${env.OPENAI_MODEL}
+  OPENAI_TEMPERATURE: ${env.OPENAI_TEMPERATURE}
+  CORE_SERVICE_URL: ${env.CORE_SERVICE_URL}
+  CORE_SERVICE_API_KEY: ${env.CORE_SERVICE_API_KEY}
+  CORE_SERVICE_TIMEOUT: ${env.CORE_SERVICE_TIMEOUT}
+
+compute:
+  memory: 1024
+  timeout: 30
+
+provider:
+  name: aws
+  region: ${env.AWS_REGION}
+  stage: ${env.STAGE}
+  runtime: nodejs20.x
+  memorySize: 1024
+  timeout: 30
+  environment:
+    NODE_OPTIONS: '--enable-source-maps'
+  tags:
+    Environment: ${env.STAGE}
+    Project: testsenseai-dashboard
+    Service: api
