@@ -39,6 +39,16 @@ resources:
     websockets:
         - name: realtime
           description: WebSocket for real-time updates
+          security:
+              - type: jwt
+                scopes: ['api:access']
+                issuer: ${env.AUTH_ISSUER}
+                audiences: ['${env.AUTH_AUDIENCE}']
+          middleware:
+              cors:
+                  origins: ['${env.CORS_ORIGIN}']
+                  allowHeaders: ['Authorization', 'x-organization-id']
+                  credentials: true
 
     schedules:
         - name: cleanup
