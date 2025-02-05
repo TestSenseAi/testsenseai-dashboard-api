@@ -21,8 +21,6 @@ export const ApiResponse = z.object({
         .optional(),
 });
 
-export type ApiResponse = z.infer<typeof ApiResponse>;
-
 // API Definition with middleware
 export const createdApi = api('dashboard', {
     middleware: [

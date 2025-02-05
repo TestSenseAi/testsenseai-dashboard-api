@@ -34,14 +34,20 @@ interface CoreAnalysisResponse {
 }
 
 export class CoreAnalysisService {
-    private client = axios.create({
-        baseURL: config.coreService.url,
-        timeout: config.coreService.timeout,
-        headers: {
-            'Content-Type': 'application/json',
-            'x-api-key': config.coreService.apiKey,
-        },
-    });
+    // Remove early instantiation
+    // private client = axios.create({...});
+
+    // Add lazy getter for the client
+    private getClient() {
+        return axios.create({
+            baseURL: config.coreService.url,
+            timeout: config.coreService.timeout,
+            headers: {
+                'Content-Type': 'application/json',
+                'x-api-key': config.coreService.apiKey,
+            },
+        });
+    }
 
     public async analyzeTest(request: CoreAnalysisRequest): Promise<NonNullable<AnalysisResult['result']>> {
         try {
@@ -50,7 +56,8 @@ export class CoreAnalysisService {
                 testId: request.testId,
             });
 
-            const { data } = await this.client.post<CoreAnalysisResponse>('/v1/analyze', request);
+            const client = this.getClient();
+            const { data } = await client.post<CoreAnalysisResponse>('/v1/analyze', request);
 
             logger.info('Core analysis service response received', {
                 projectId: request.projectId,
@@ -73,7 +80,8 @@ export class CoreAnalysisService {
 
     public async getHealth(): Promise<boolean> {
         try {
-            const { status } = await this.client.get('/health');
+            const client = this.getClient();
+            const { status } = await client.get('/health');
             return status === 200;
         } catch (error) {
             logger.error('Core service health check failed', { error });

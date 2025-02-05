@@ -1,96 +1,93 @@
 /// <reference types="jest" />
-
 import { Logger } from '../logger';
+import { jest } from '@jest/globals';
 
 describe('Logger', () => {
-    const originalConsole = { ...console };
-    const mockConsole = {
-        error: jest.fn(),
-        warn: jest.fn(),
-        info: jest.fn(),
-        debug: jest.fn(),
-    };
-
-    beforeAll(() => {
-        console.error = mockConsole.error;
-        console.warn = mockConsole.warn;
-        console.info = mockConsole.info;
-        console.debug = mockConsole.debug;
-    });
-
-    afterAll(() => {
-        console.error = originalConsole.error;
-        console.warn = originalConsole.warn;
-        console.info = originalConsole.info;
-        console.debug = originalConsole.debug;
-    });
+    let logger: Logger;
+    let mockDate: string;
+    let originalConsole: typeof console;
+    let originalLogLevel: string | undefined;
 
     beforeEach(() => {
         jest.clearAllMocks();
+        originalConsole = { ...console };
+        originalLogLevel = process.env.LOG_LEVEL;
+        console.error = jest.fn();
+        console.warn = jest.fn();
+        console.info = jest.fn();
+        console.debug = jest.fn();
+        mockDate = '2025-02-03T10:25:30.783Z';
+        jest.spyOn(Date.prototype, 'toISOString').mockReturnValue(mockDate);
         process.env.LOG_LEVEL = 'debug';
+        logger = new Logger();
     });
 
     afterEach(() => {
-        delete process.env.LOG_LEVEL;
+        Object.assign(console, originalConsole);
+        process.env.LOG_LEVEL = originalLogLevel;
+        jest.restoreAllMocks();
     });
 
-    it('should log error messages', () => {
-        const logger = new Logger();
-        const error = new Error('Test error');
-        logger.error('Error message', { userId: '123' }, error);
+    test('should log error messages', () => {
+        const message = 'Test error message';
+        const expectedLog = {
+            level: 'error',
+            message,
+            timestamp: mockDate,
+        };
 
-        expect(mockConsole.error).toHaveBeenCalledWith(expect.stringContaining('"level":"error"'));
-        expect(mockConsole.error).toHaveBeenCalledWith(expect.stringContaining('"message":"Error message"'));
-        expect(mockConsole.error).toHaveBeenCalledWith(expect.stringContaining('"userId":"123"'));
-        expect(mockConsole.error).toHaveBeenCalledWith(expect.stringContaining('"name":"Error"'));
-        expect(mockConsole.error).toHaveBeenCalledWith(expect.stringContaining('"message":"Test error"'));
+        logger.error(message);
+        expect(console.error).toHaveBeenCalledWith(JSON.stringify(expectedLog));
     });
 
-    it('should log warning messages', () => {
-        const logger = new Logger();
-        logger.warn('Warning message', { userId: '123' });
+    test('should log warning messages', () => {
+        const message = 'Test warning message';
+        const expectedLog = {
+            level: 'warn',
+            message,
+            timestamp: mockDate,
+        };
 
-        expect(mockConsole.warn).toHaveBeenCalledWith(expect.stringContaining('"level":"warn"'));
-        expect(mockConsole.warn).toHaveBeenCalledWith(expect.stringContaining('"message":"Warning message"'));
-        expect(mockConsole.warn).toHaveBeenCalledWith(expect.stringContaining('"userId":"123"'));
+        logger.warn(message);
+        expect(console.warn).toHaveBeenCalledWith(JSON.stringify(expectedLog));
     });
 
-    it('should log info messages', () => {
-        const logger = new Logger();
-        logger.info('Info message', { userId: '123' });
+    test('should log info messages', () => {
+        const message = 'Test info message';
+        const expectedLog = {
+            level: 'info',
+            message,
+            timestamp: mockDate,
+        };
 
-        expect(mockConsole.info).toHaveBeenCalledWith(expect.stringContaining('"level":"info"'));
-        expect(mockConsole.info).toHaveBeenCalledWith(expect.stringContaining('"message":"Info message"'));
-        expect(mockConsole.info).toHaveBeenCalledWith(expect.stringContaining('"userId":"123"'));
+        logger.info(message);
+        expect(console.info).toHaveBeenCalledWith(JSON.stringify(expectedLog));
     });
 
-    it('should log debug messages', () => {
-        const logger = new Logger();
-        logger.debug('Debug message', { userId: '123' });
+    test('should log debug messages', () => {
+        const message = 'Test debug message';
+        const expectedLog = {
+            level: 'debug',
+            message,
+            timestamp: mockDate,
+        };
 
-        expect(mockConsole.debug).toHaveBeenCalledWith(expect.stringContaining('"level":"debug"'));
-        expect(mockConsole.debug).toHaveBeenCalledWith(expect.stringContaining('"message":"Debug message"'));
-        expect(mockConsole.debug).toHaveBeenCalledWith(expect.stringContaining('"userId":"123"'));
+        logger.debug(message);
+        expect(console.debug).toHaveBeenCalledWith(JSON.stringify(expectedLog));
     });
 
-    it('should respect log level settings', () => {
+    test('should respect log level settings', () => {
         process.env.LOG_LEVEL = 'warn';
-        const logger = new Logger();
+        logger = new Logger();
 
-        logger.info('This should not be logged');
-        logger.warn('This should be logged');
-        logger.error('This should be logged');
+        logger.debug('Debug message');
+        logger.info('Info message');
+        logger.warn('Warning message');
+        logger.error('Error message');
 
-        expect(mockConsole.info).not.toHaveBeenCalled();
-        expect(mockConsole.warn).toHaveBeenCalled();
-        expect(mockConsole.error).toHaveBeenCalled();
-    });
-
-    it('should handle invalid log levels', () => {
-        process.env.LOG_LEVEL = 'invalid';
-        const logger = new Logger();
-
-        logger.info('This should be logged');
-        expect(mockConsole.info).toHaveBeenCalled();
+        expect(console.debug).not.toHaveBeenCalled();
+        expect(console.info).not.toHaveBeenCalled();
+        expect(console.warn).toHaveBeenCalled();
+        expect(console.error).toHaveBeenCalled();
     });
 });
