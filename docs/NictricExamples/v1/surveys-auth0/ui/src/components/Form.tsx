@@ -22,7 +22,9 @@ const Form: React.FC<Form> = () => {
     const runPrefillEvent = async () => {
       const { submission } = router.query
 
-      if (submission) {
+      const allowedSubmissions = ['submission1', 'submission2', 'submission3']; // Example whitelist
+
+      if (submission && allowedSubmissions.includes(submission)) {
         const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/forms/${submission}`
         const response = await callApi(url, {
           method: 'GET',
