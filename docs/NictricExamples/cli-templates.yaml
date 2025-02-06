@@ -1,0 +1,31 @@
+# This file contains the templates available to the user
+# when executing the "nitric new" command.
+templates:
+  - name: ts-starter
+    label: TypeScript - Starter (Node)
+    desc: A simple REST API
+    path: ./v1/typescript-starter
+  - name: ts-starter-deno
+    label: TypeScript - Starter (Deno)
+    desc: A simple REST API using Deno
+    path: ./v1/typescript-starter-deno
+  - name: js-starter
+    label: JavaScript - Starter
+    desc: A simple REST API
+    path: ./v1/javascript-starter
+  - name: py-starter
+    label: Python - Starter (uv)
+    desc: A starter Nitric project for Python
+    path: ./v1/python-starter
+  - name: py-starter-pipenv
+    label: Python - Starter (pipenv)
+    desc: A starter Nitric project for Python using pipenv
+    path: ./v1/python-starter-pipenv
+  - name: dart-starter
+    label: Dart - Starter
+    desc: A simple REST API
+    path: ./v1/dart-starter
+  - name: go-starter
+    label: Go - Starter
+    desc: A simple REST API
+    path: ./v1/go-starter

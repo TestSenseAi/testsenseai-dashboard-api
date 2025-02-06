@@ -9,7 +9,7 @@ import { getMetricsSummary, getMetricsTrends } from './metrics/metrics.controlle
 import { getActivities } from './activities/activities.controller';
 
 // Common response types
-export const ApiResponse = z.object({
+export const ApiResponseSchema = z.object({
     success: z.boolean(),
     data: z.unknown().optional(),
     error: z
@@ -20,6 +20,8 @@ export const ApiResponse = z.object({
         })
         .optional(),
 });
+
+export type ApiResponse = z.infer<typeof ApiResponseSchema>;
 
 // API Definition with middleware
 export const createdApi = api('dashboard', {

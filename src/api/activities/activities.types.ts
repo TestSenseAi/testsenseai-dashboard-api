@@ -1,6 +1,8 @@
 export type Activity = {
     id: string;
     type: string;
+    description: string;
+    timestamp: string;
     createdAt: string;
     updatedAt: string;
 };

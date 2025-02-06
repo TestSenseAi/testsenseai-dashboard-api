@@ -133,3 +133,4 @@ dist
 # Nitric Documentation Folders
 docs/docs
 docs/examples
+docs/jest

@@ -5,6 +5,15 @@ import { NotFoundError, InternalError } from '../common/errors';
 import { NotificationService } from './notification.service';
 import { CoreAnalysisService } from './core-analysis.service';
 
+// Mock the logger so we can inspect its calls
+jest.mock('../common/logger', () => ({
+    logger: {
+        debug: jest.fn(),
+        info: jest.fn(),
+        error: jest.fn(),
+    },
+}));
+
 interface Analysis extends AnalysisRequest {
     id: string;
     orgId: string;
@@ -149,8 +158,8 @@ export class AnalysisService {
             const result = await this.coreAnalysisService.analyzeTest({
                 projectId: analysis.context.projectId,
                 testId: analysis.context.testId,
-                parameters: analysis.context.parameters,
-                metadata: analysis.context.metadata,
+                parameters: analysis.context.parameters || {},
+                metadata: analysis.context.metadata || {},
             });
 
             // Update analysis with results

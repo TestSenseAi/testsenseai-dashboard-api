@@ -3,15 +3,7 @@ export default {
     testEnvironment: 'node',
     setupFiles: ['<rootDir>/jest.setup.ts'],
     moduleNameMapper: {
-        '^(\\.{1,2}/.*)\\.js$': '$1',
         '^@/(.*)$': '<rootDir>/src/$1',
-        '^@services/(.*)$': '<rootDir>/src/services/$1',
-        '^@common/(.*)$': '<rootDir>/src/common/$1',
-        '^@config/(.*)$': '<rootDir>/src/config/$1',
-        '^@utils/(.*)$': '<rootDir>/src/utils/$1',
-        '^@types/(.*)$': '<rootDir>/src/types/$1',
-        '^@hooks/(.*)$': '<rootDir>/src/hooks/$1',
-        '^@api/(.*)$': '<rootDir>/src/api/$1',
     },
     extensionsToTreatAsEsm: ['.ts'],
     transform: {

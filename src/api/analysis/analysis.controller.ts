@@ -7,7 +7,9 @@ import { NotificationService } from '@/services/notification.service';
 import { CoreAnalysisService } from '@/services/core-analysis.service';
 
 const analysisApi = api('analysis');
-const analysisService = new AnalysisService(new CoreAnalysisService(), new NotificationService());
+const coreAnalysisService = new CoreAnalysisService();
+const notificationService = NotificationService.getInstance();
+const analysisService = new AnalysisService(coreAnalysisService, notificationService);
 
 // Create analysis endpoint
 analysisApi.post('/v1/analyses', async (ctx: HttpContext) => {
