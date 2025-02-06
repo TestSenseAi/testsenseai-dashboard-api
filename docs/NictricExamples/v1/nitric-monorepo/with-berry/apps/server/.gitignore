@@ -1,6 +1,0 @@
-node_modules/
-.nitric/
-.npmrc
-git.store
-lib
-.env

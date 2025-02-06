@@ -1,8 +1,0 @@
-.nitric/
-.git/
-.idea/
-.vscode/
-.github/
-*.dockerfile
-*.dockerignore
-.dart_tool/

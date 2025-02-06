@@ -1,9 +1,0 @@
-name: nitric-nest
-services:
-  - match: src/main.ts
-    runtime: node
-    start: npm run dev:services $SERVICE_PATH
-batch-services: []
-runtimes:
-  node:
-    dockerfile: ./node.dockerfile

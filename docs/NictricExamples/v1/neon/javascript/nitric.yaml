@@ -1,4 +1,0 @@
-name: echo
-services:
-  - match: services/*.js
-    start: npm run dev:services $SERVICE_PATH
