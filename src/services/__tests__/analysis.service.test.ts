@@ -1,22 +1,24 @@
+import { jest } from '@jest/globals';
 import { InternalError, NotFoundError } from '../../common/errors';
 import { AnalysisService } from '../analysis.service';
 import { AnalysisRequest, AnalysisResult } from '../../api/analysis/analysis.types';
-import { logger } from '../../common/logger';
+import { logger } from '@/common/logger';
 import { NotificationService } from '../notification.service';
 import { CoreAnalysisService } from '../core-analysis.service';
 
 // -- Mocks for Nitric KV Store --
+type KvSetFn = (key: string, value: any) => Promise<void>;
+type KvGetFn = (key: string) => Promise<any>;
+type KvAllowFn = () => { set: KvSetFn; get: KvGetFn };
+type KvStoreFn = () => { allow: KvAllowFn };
 
-// We create jest mocks for the KV store methods.
-const mockKvSet = jest.fn();
-const mockKvGet = jest.fn();
-
-// We simulate the KV API as it is used in the service.
-const mockAllow = jest.fn().mockReturnValue({
+const mockKvSet = jest.fn<KvSetFn>() as jest.MockedFunction<KvSetFn>;
+const mockKvGet = jest.fn<KvGetFn>() as jest.MockedFunction<KvGetFn>;
+const mockAllow = jest.fn<KvAllowFn>().mockReturnValue({
     set: mockKvSet,
     get: mockKvGet,
 });
-const mockKv = jest.fn().mockReturnValue({
+const mockKv = jest.fn<KvStoreFn>().mockReturnValue({
     allow: mockAllow,
 });
 
@@ -25,12 +27,15 @@ jest.mock('@nitric/sdk', () => ({
     kv: mockKv,
 }));
 
-// -- Mock the logger --
-jest.mock('../common/logger', () => ({
+const mockInfo = jest.fn();
+const mockError = jest.fn();
+const mockDebug = jest.fn();
+
+jest.mock('@/common/logger', () => ({
     logger: {
-        info: jest.fn(),
-        error: jest.fn(),
-        debug: jest.fn(),
+        info: mockInfo,
+        error: mockError,
+        debug: mockDebug,
     },
 }));
 
@@ -96,13 +101,13 @@ describe('AnalysisService', () => {
 
         // Create mocks for dependent services.
         coreAnalysisService = {
-            analyzeTest: jest.fn().mockResolvedValue(dummyAnalysisResult),
+            analyzeTest: jest.fn().mockResolvedValue(dummyAnalysisResult as any as never),
             // Add any other methods if needed.
         } as unknown as jest.Mocked<CoreAnalysisService>;
 
         notificationService = {
-            notifyAnalysisComplete: jest.fn().mockResolvedValue(undefined),
-            notifyAnalysisFailed: jest.fn().mockResolvedValue(undefined),
+            notifyAnalysisComplete: jest.fn().mockResolvedValue(undefined as any as never),
+            notifyAnalysisFailed: jest.fn().mockResolvedValue(undefined as any as never),
         } as unknown as jest.Mocked<NotificationService>;
 
         // Create the service instance.
@@ -114,7 +119,7 @@ describe('AnalysisService', () => {
 
         it('should create an analysis and log info', async () => {
             // Arrange: simulate a successful kv.set call.
-            mockKvSet.mockResolvedValue(undefined);
+            mockKvSet.mockResolvedValue(undefined as any as never);
 
             // Act: call createAnalysis.
             const analysis = await service.createAnalysis(orgId, dummyRequest);
@@ -139,7 +144,7 @@ describe('AnalysisService', () => {
         it('should throw an InternalError if kv.set fails', async () => {
             // Arrange: simulate a failure in storing the analysis.
             const error = new Error('Storage error');
-            mockKvSet.mockRejectedValueOnce(error);
+            mockKvSet.mockRejectedValueOnce(error as any as never);
 
             // Act & Assert: expect createAnalysis to throw InternalError.
             await expect(service.createAnalysis(orgId, dummyRequest)).rejects.toThrow(InternalError);
@@ -153,14 +158,14 @@ describe('AnalysisService', () => {
 
         it('should return the analysis if found and org matches', async () => {
             const analysis = createDummyAnalysis();
-            mockKvGet.mockResolvedValueOnce(analysis);
+            mockKvGet.mockResolvedValueOnce(analysis as any as never);
 
             const result = await service.getAnalysis(orgId, analysisId);
             expect(result).toEqual(analysis);
         });
 
         it('should throw NotFoundError if analysis not found', async () => {
-            mockKvGet.mockResolvedValueOnce(null);
+            mockKvGet.mockResolvedValueOnce(null as any as never);
             await expect(service.getAnalysis(orgId, analysisId)).rejects.toThrow(NotFoundError);
         });
 

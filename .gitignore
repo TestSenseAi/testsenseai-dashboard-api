@@ -131,4 +131,6 @@ dist
 
 
 # Nitric Documentation Folders
-docs/
+docs/nitricDocs
+docs/nitricExamples
+docs/nitricTesting.md

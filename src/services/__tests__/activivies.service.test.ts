@@ -1,12 +1,15 @@
+import { jest } from '@jest/globals';
 import { ActivitiesService } from '../activities.service';
-import { logger } from '../../common/logger';
 
-// Mock the logger so we can inspect its calls
-jest.mock('../common/logger', () => ({
+const mockDebug = jest.fn();
+const mockInfo = jest.fn();
+const mockError = jest.fn();
+
+jest.mock('@/common/logger', () => ({
     logger: {
-        debug: jest.fn(),
-        info: jest.fn(),
-        error: jest.fn(),
+        debug: mockDebug,
+        info: mockInfo,
+        error: mockError,
     },
 }));
 
@@ -27,7 +30,7 @@ describe('ActivitiesService', () => {
             const activities = await service.getActivities(orgId, query);
 
             // Verify the debug log was called with the correct arguments
-            expect(logger.debug).toHaveBeenCalledWith('Getting activities', {
+            expect(mockDebug).toHaveBeenCalledWith('Getting activities', {
                 organizationId: orgId,
                 query,
             });

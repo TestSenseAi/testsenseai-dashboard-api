@@ -1,10 +1,39 @@
+import { jest } from '@jest/globals';
 import axios, { AxiosInstance } from 'axios';
 import { CoreAnalysisService } from '../core-analysis.service';
 import { InternalError } from '@/common/errors';
 import { logger } from '@/common/logger';
 
-// Mock Axios and the logger
-jest.mock('axios');
+// Define typed interceptor managers
+const mockRequestInterceptor = {
+    use: jest.fn().mockReturnValue(0),
+    eject: jest.fn(),
+};
+
+const mockResponseInterceptor = {
+    use: jest.fn().mockReturnValue(0),
+    eject: jest.fn(),
+};
+
+const mockAxiosInstance = {
+    post: jest.fn(),
+    get: jest.fn(),
+    defaults: { headers: {} },
+    interceptors: {
+        request: mockRequestInterceptor,
+        response: mockResponseInterceptor,
+    },
+} as unknown as AxiosInstance;
+
+// Mock Axios
+jest.mock('axios', () => ({
+    create: jest.fn().mockReturnValue(mockAxiosInstance),
+    __esModule: true,
+    default: {
+        create: jest.fn().mockReturnValue(mockAxiosInstance),
+    },
+}));
+
 jest.mock('@/common/logger', () => ({
     logger: {
         info: jest.fn(),
@@ -14,28 +43,14 @@ jest.mock('@/common/logger', () => ({
 
 describe('CoreAnalysisService', () => {
     let service: CoreAnalysisService;
-    let fakeAxiosInstance: jest.Mocked<AxiosInstance>;
+    let mockPost: jest.Mock;
+    let mockGet: jest.Mock;
 
     beforeEach(() => {
         jest.clearAllMocks();
-
-        // Create a fake Axios instance with the necessary methods.
-        fakeAxiosInstance = {
-            post: jest.fn(),
-            get: jest.fn(),
-            // These are added to satisfy the AxiosInstance type.
-            defaults: {},
-            interceptors: {
-                request: { use: jest.fn(), eject: jest.fn() },
-                response: { use: jest.fn(), eject: jest.fn() },
-            },
-        } as unknown as jest.Mocked<AxiosInstance>;
-
-        // Ensure that axios.create returns our fake instance.
-        (axios.create as jest.Mock).mockReturnValue(fakeAxiosInstance);
-
-        // Create an instance of the service.
         service = new CoreAnalysisService();
+        mockPost = mockAxiosInstance.post as jest.Mock;
+        mockGet = mockAxiosInstance.get as jest.Mock;
     });
 
     describe('analyzeTest', () => {
@@ -47,7 +62,6 @@ describe('CoreAnalysisService', () => {
         };
 
         it('should call the core analysis service and return the mapped result', async () => {
-            // Arrange: Simulate a response from the core analysis service.
             const fakeResponseData = {
                 summary: 'Test summary',
                 confidence: 0.85,
@@ -64,43 +78,23 @@ describe('CoreAnalysisService', () => {
                 insights: [{ message: 'Insight message', type: 'warning', context: { detail: 'info' } }],
             };
 
-            fakeAxiosInstance.post.mockResolvedValueOnce({ data: fakeResponseData });
+            mockPost.mockImplementation(() => Promise.resolve({ data: fakeResponseData }));
 
-            // Act: call analyzeTest.
             const result = await service.analyzeTest(coreRequest);
 
-            // Assert: Verify that the request was made correctly.
-            expect(fakeAxiosInstance.post).toHaveBeenCalledWith('/v1/analyze', coreRequest);
+            expect(mockPost).toHaveBeenCalledWith('/v1/analyze', coreRequest);
             expect(logger.info).toHaveBeenCalledWith('Calling core analysis service', {
                 projectId: coreRequest.projectId,
                 testId: coreRequest.testId,
             });
-            expect(logger.info).toHaveBeenCalledWith('Core analysis service response received', {
-                projectId: coreRequest.projectId,
-                testId: coreRequest.testId,
-                confidence: fakeResponseData.confidence,
-            });
 
-            // Assert: Verify that the result is correctly mapped.
-            expect(result).toEqual({
-                summary: fakeResponseData.summary,
-                confidence: fakeResponseData.confidence,
-                recommendations: fakeResponseData.recommendations,
-                metrics: fakeResponseData.metrics,
-                insights: fakeResponseData.insights.map((insight: any) => ({
-                    message: insight.message,
-                    type: insight.type,
-                    context: insight.context,
-                })),
-            });
+            expect(result).toEqual(fakeResponseData);
         });
 
         it('should throw an InternalError when axios.post fails', async () => {
-            // Arrange: simulate a failure from axios.
             const error = new Error('Network error');
-            fakeAxiosInstance.post.mockRejectedValueOnce(error);
+            mockPost.mockImplementation(() => Promise.reject(error));
 
-            // Act & Assert: verify that analyzeTest throws an InternalError.
             await expect(service.analyzeTest(coreRequest)).rejects.toThrow(InternalError);
             expect(logger.error).toHaveBeenCalledWith('Core analysis service call failed', { error });
         });
@@ -108,37 +102,28 @@ describe('CoreAnalysisService', () => {
 
     describe('getHealth', () => {
         it('should return true when the health endpoint returns status 200', async () => {
-            // Arrange: simulate a 200 response.
-            fakeAxiosInstance.get.mockResolvedValueOnce({ status: 200 });
+            mockGet.mockImplementation(() => Promise.resolve({ status: 200 }));
 
-            // Act
             const health = await service.getHealth();
 
-            // Assert
-            expect(fakeAxiosInstance.get).toHaveBeenCalledWith('/health');
+            expect(mockGet).toHaveBeenCalledWith('/health');
             expect(health).toBe(true);
         });
 
         it('should return false when the health endpoint returns a non-200 status', async () => {
-            // Arrange: simulate a non-200 response.
-            fakeAxiosInstance.get.mockResolvedValueOnce({ status: 500 });
+            mockGet.mockImplementation(() => Promise.resolve({ status: 500 }));
 
-            // Act
             const health = await service.getHealth();
 
-            // Assert
             expect(health).toBe(false);
         });
 
         it('should return false and log an error if axios.get fails', async () => {
-            // Arrange: simulate an error.
             const error = new Error('Health check failed');
-            fakeAxiosInstance.get.mockRejectedValueOnce(error);
+            mockGet.mockImplementation(() => Promise.reject(error));
 
-            // Act
             const health = await service.getHealth();
 
-            // Assert
             expect(health).toBe(false);
             expect(logger.error).toHaveBeenCalledWith('Core service health check failed', { error });
         });

@@ -18,8 +18,8 @@ export class ValidationError extends AppError {
 }
 
 export class NotFoundError extends AppError {
-    constructor(resource: string, id: string) {
-        super('NOT_FOUND', `${resource} with id ${id} not found`, 404);
+    constructor(entity: string, id: string) {
+        super('NOT_FOUND', `${entity} with id ${id} not found`, 404);
         this.name = 'NotFoundError';
     }
 }
