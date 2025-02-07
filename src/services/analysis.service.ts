@@ -5,15 +5,6 @@ import { NotFoundError, InternalError } from '../common/errors';
 import { NotificationService } from './notification.service';
 import { CoreAnalysisService } from './core-analysis.service';
 
-// Mock the logger so we can inspect its calls
-jest.mock('../common/logger', () => ({
-    logger: {
-        debug: jest.fn(),
-        info: jest.fn(),
-        error: jest.fn(),
-    },
-}));
-
 interface Analysis extends AnalysisRequest {
     id: string;
     orgId: string;
