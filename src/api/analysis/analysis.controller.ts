@@ -3,8 +3,8 @@ import { AnalysisService } from '../../services/analysis.service';
 import { AnalysisRequestSchema, AnalysisResult } from './analysis.types';
 import { logger } from '../../common/logger';
 import { NotFoundError } from '../../common/errors';
-import { NotificationService } from '@/services/notification.service';
-import { CoreAnalysisService } from '@/services/core-analysis.service';
+import { NotificationService } from '../../services/notification.service';
+import { CoreAnalysisService } from '../../services/core-analysis.service';
 
 const analysisApi = api('analysis');
 const coreAnalysisService = new CoreAnalysisService();

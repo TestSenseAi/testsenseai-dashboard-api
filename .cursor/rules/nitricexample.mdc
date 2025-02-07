@@ -1,0 +1,10 @@
+---
+description: all nitric examples
+globs: docs/node-sdk-main/**/*test.ts
+---
+
+# Your rule content
+
+- You can @ files here
+- You can use markdown but dont have to
+

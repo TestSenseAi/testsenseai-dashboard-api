@@ -1,7 +1,7 @@
 import axios, { AxiosInstance } from 'axios';
-import { InternalError } from '@/common/errors';
-import { logger } from '@/common/logger';
-import { config } from '@/config';
+import { InternalError } from '../common/errors';
+import { logger } from '../common/logger';
+import { config } from '../config';
 
 export class CoreAnalysisService {
     private client: AxiosInstance;

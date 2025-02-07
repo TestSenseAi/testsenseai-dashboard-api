@@ -1,6 +1,6 @@
 import { jest } from '@jest/globals';
 import { KeyValueStoreResource, WebsocketResource } from '@nitric/sdk';
-import { AnalysisResult } from '@/api/analysis/analysis.types';
+import { AnalysisResult } from '../../api/analysis/analysis.types';
 import { CoreAnalysisService } from '../core-analysis.service';
 import { NotificationService } from '../notification.service';
 

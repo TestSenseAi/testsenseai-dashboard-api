@@ -1,33 +1,20 @@
-export default {
-    preset: 'ts-jest/presets/default-esm',
+/** @type {import('ts-jest').JestConfigWithTsJest} */
+module.exports = {
+    preset: 'ts-jest',
     testEnvironment: 'node',
-    setupFiles: ['<rootDir>/jest.setup.ts'],
+    roots: ['<rootDir>/src'],
+    testMatch: ['**/__test__/**/*.[jt]s?(x)', '**/__tests__/**/*.[jt]s?(x)'],
     moduleNameMapper: {
         '^@/(.*)$': '<rootDir>/src/$1',
     },
-    extensionsToTreatAsEsm: ['.ts'],
-    transform: {
-        '^.+\\.tsx?$': [
-            'ts-jest',
-            {
-                useESM: true,
-                tsconfig: 'tsconfig.json',
-            },
-        ],
-    },
-    moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
-    testMatch: ['**/src/**/__tests__/**/*.test.ts', '**/src/**/*.spec.ts'],
-    testPathIgnorePatterns: ['/node_modules/', '/dist/', '/docs/'],
+    collectCoverage: true,
     coverageDirectory: 'coverage',
-    collectCoverageFrom: ['src/**/*.{ts,tsx}', '!src/**/*.d.ts', '!src/**/*.test.{ts,tsx}', '!src/**/__tests__/**'],
-    setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
-    transformIgnorePatterns: ['/node_modules/'],
-    moduleDirectories: ['node_modules', 'src'],
-    roots: ['<rootDir>/src'],
-    modulePaths: ['<rootDir>/src'],
-    modulePathIgnorePatterns: ['<rootDir>/dist/'],
-    testEnvironmentOptions: {
-        url: 'http://localhost',
+    coverageThreshold: {
+        global: {
+            branches: 80,
+            functions: 80,
+            lines: 80,
+            statements: 80,
+        },
     },
-    injectGlobals: true,
 };
