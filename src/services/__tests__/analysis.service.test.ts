@@ -162,7 +162,6 @@ describe('AnalysisService', () => {
         it('should process analysis and notify on completion', async () => {
             coreAnalysisService.analyzeTest.mockResolvedValue(dummyAnalysisResult);
 
-            // Wait for the processAnalysis method to complete
             await (service as any).processAnalysis(analysis);
 
             expect(mockKvStore.set).toHaveBeenCalledWith(
@@ -453,7 +452,6 @@ describe('AnalysisService', () => {
             expect(result.items).toHaveLength(0);
         });
         it('should update analysis status to completed even if notification fails', async () => {
-            const orgId = 'org-123';
             // Simulate a failure in the notification service
             jest.spyOn(notificationService, 'notifyAnalysisComplete').mockRejectedValue(
                 new Error('Notification failure')
@@ -463,7 +461,7 @@ describe('AnalysisService', () => {
 
             mockKvStore.set.mockResolvedValue(undefined);
 
-            const analysis = await service.createAnalysis(orgId, dummyRequest);
+            const analysis = await service.createAnalysis('org-123', dummyRequest);
 
             // Validate that analysis status is updated to 'completed'
             expect(analysis.status).toEqual('completed');

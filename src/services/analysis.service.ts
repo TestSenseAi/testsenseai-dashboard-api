@@ -247,4 +247,18 @@ export class AnalysisService {
             throw new InternalError('Failed to scan keys');
         }
     }
+
+    private async notifyAnalysisComplete(analysis: Analysis, result: AnalysisResult['result']): Promise<void> {
+        try {
+            await this.notificationService.notifyAnalysisComplete(analysis.orgId, analysis.id, {
+                summary: result?.summary,
+                recommendations: result?.recommendations,
+            });
+        } catch (error) {
+            logger.error('Failed to send analysis completion notification', {
+                analysisId: analysis.id,
+                error,
+            });
+        }
+    }
 }
