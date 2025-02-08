@@ -162,6 +162,7 @@ describe('AnalysisService', () => {
         it('should process analysis and notify on completion', async () => {
             coreAnalysisService.analyzeTest.mockResolvedValue(dummyAnalysisResult);
 
+            // Wait for the processAnalysis method to complete
             await (service as any).processAnalysis(analysis);
 
             expect(mockKvStore.set).toHaveBeenCalledWith(
