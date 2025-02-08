@@ -1,3 +1,12 @@
+import { jest } from '@jest/globals';
+import { kv, KeyValueStoreResource } from '@nitric/sdk';
+import { logger } from '@/common/logger';
+import { InternalError, NotFoundError } from '@/common/errors';
+import { AnalysisService } from '../analysis.service';
+import { AnalysisRequest } from '../../api/analysis/analysis.types';
+import { NotificationService } from '../notification.service';
+import { CoreAnalysisService } from '../core-analysis.service';
+
 // Establish mocks before any imports
 jest.mock('@/common/logger');
 jest.mock('@nitric/sdk', () => ({
@@ -27,15 +36,6 @@ jest.mock('@nitric/sdk', () => ({
         allow: jest.fn().mockReturnThis(),
     }),
 }));
-
-import { jest } from '@jest/globals';
-import { kv, KeyValueStoreResource } from '@nitric/sdk';
-import { logger } from '@/common/logger';
-import { InternalError } from '@/common/errors';
-import { AnalysisService } from '../analysis.service';
-import { AnalysisRequest } from '../../api/analysis/analysis.types';
-import { NotificationService } from '../notification.service';
-import { CoreAnalysisService } from '../core-analysis.service';
 
 // Get the mocked kv store
 const mockKvStore = kv('analyses') as unknown as jest.Mocked<KeyValueStoreResource<any>> & {
@@ -199,6 +199,257 @@ describe('AnalysisService', () => {
             );
 
             expect(notificationService.notifyAnalysisFailed).toHaveBeenCalled();
+        });
+
+        it('should handle notification errors during success', async () => {
+            // Setup successful analysis
+            coreAnalysisService.analyzeTest.mockResolvedValue(dummyAnalysisResult);
+
+            // Mock the notification to fail with InternalError
+            const notificationError = new InternalError('Failed to send notification');
+            notificationService.notifyAnalysisComplete.mockRejectedValue(notificationError);
+
+            // Process should complete without throwing
+            await (service as any).processAnalysis(analysis);
+
+            // Status should be updated to completed
+            expect(mockKvStore.set).toHaveBeenCalledWith(
+                analysis.id,
+                expect.objectContaining({
+                    status: 'completed',
+                    result: dummyAnalysisResult,
+                })
+            );
+
+            // Verify notification was attempted
+            expect(notificationService.notifyAnalysisComplete).toHaveBeenCalledWith(
+                analysis.orgId,
+                analysis.id,
+                expect.objectContaining({
+                    summary: dummyAnalysisResult.summary,
+                    recommendations: dummyAnalysisResult.recommendations,
+                })
+            );
+
+            // Verify error was logged
+            expect(logger.error).toHaveBeenCalledWith(
+                'Failed to send analysis completion notification',
+                expect.objectContaining({
+                    analysisId: analysis.id,
+                    error: notificationError,
+                })
+            );
+        });
+
+        it('should handle notification errors during failure', async () => {
+            const processingError = new Error('Analysis failed');
+            coreAnalysisService.analyzeTest.mockRejectedValue(processingError);
+
+            // Mock notification to fail with InternalError
+            const notificationError = new InternalError('Failed to send notification');
+            notificationService.notifyAnalysisFailed.mockRejectedValue(notificationError);
+
+            // Original error should still be thrown
+            await expect((service as any).processAnalysis(analysis)).rejects.toThrow(processingError);
+
+            // Status should be updated to failed
+            expect(mockKvStore.set).toHaveBeenCalledWith(
+                analysis.id,
+                expect.objectContaining({
+                    status: 'failed',
+                    error: expect.objectContaining({
+                        message: processingError.message,
+                    }),
+                })
+            );
+
+            // Verify notification was attempted
+            expect(notificationService.notifyAnalysisFailed).toHaveBeenCalledWith(
+                analysis.orgId,
+                analysis.id,
+                processingError.message
+            );
+
+            // Verify error was logged
+            expect(logger.error).toHaveBeenCalledWith(
+                'Failed to send analysis failure notification',
+                expect.objectContaining({
+                    analysisId: analysis.id,
+                    error: notificationError,
+                })
+            );
+        });
+
+        it('should handle storage errors during status update', async () => {
+            // Mock the storage error
+            const error = new Error('Storage error');
+            mockKvStore.set.mockRejectedValueOnce(error);
+
+            // Create a new analysis which will trigger processAnalysis
+            await expect(service.createAnalysis('org-123', dummyRequest)).rejects.toThrow(InternalError);
+
+            // Verify the error was logged
+            expect(logger.error).toHaveBeenCalledWith('Failed to create analysis', expect.objectContaining({ error }));
+        });
+    });
+
+    describe('getAnalysis', () => {
+        const orgId = 'org-123';
+        const analysisId = 'analysis-123';
+
+        it('should return analysis if found and org matches', async () => {
+            const analysis = createDummyAnalysis();
+            mockKvStore.get.mockResolvedValue(analysis);
+
+            const result = await service.getAnalysis(orgId, analysisId);
+            expect(result).toEqual(analysis);
+        });
+
+        it('should throw NotFoundError if analysis not found', async () => {
+            mockKvStore.get.mockResolvedValue(null);
+            await expect(service.getAnalysis(orgId, analysisId)).rejects.toThrow(
+                'Analysis with id analysis-123 not found'
+            );
+        });
+
+        it('should throw NotFoundError if analysis orgId does not match', async () => {
+            const analysis = createDummyAnalysis({ orgId: 'different-org' });
+            mockKvStore.get.mockResolvedValue(analysis);
+            await expect(service.getAnalysis(orgId, analysisId)).rejects.toThrow(
+                'Analysis with id analysis-123 not found'
+            );
+        });
+
+        it('should handle storage errors gracefully', async () => {
+            const error = new Error('Storage error');
+            mockKvStore.get.mockRejectedValue(error);
+            await expect(service.getAnalysis(orgId, analysisId)).rejects.toThrow(InternalError);
+        });
+    });
+
+    describe('listAnalyses', () => {
+        const orgId = 'org-123';
+
+        beforeEach(() => {
+            // Mock scanKeys to return some test keys
+            jest.spyOn(service as any, 'scanKeys').mockResolvedValue(['analysis-1', 'analysis-2', 'analysis-3']);
+        });
+
+        it('should list analyses with pagination', async () => {
+            const analyses = [
+                createDummyAnalysis({ id: 'analysis-1', createdAt: '2024-01-01T00:00:00Z' }),
+                createDummyAnalysis({ id: 'analysis-2', createdAt: '2024-01-02T00:00:00Z' }),
+                createDummyAnalysis({ id: 'analysis-3', createdAt: '2024-01-03T00:00:00Z' }),
+            ];
+
+            mockKvStore.get.mockImplementation(async key => analyses.find(a => a.id === key));
+
+            const result = await service.listAnalyses(orgId, { limit: 2 });
+            expect(result.items).toHaveLength(2);
+            expect(result.nextCursor).toBeDefined();
+        });
+
+        it('should filter by status', async () => {
+            const analyses = [
+                createDummyAnalysis({ id: 'analysis-1', status: 'completed' }),
+                createDummyAnalysis({ id: 'analysis-2', status: 'pending' }),
+                createDummyAnalysis({ id: 'analysis-3', status: 'completed' }),
+            ];
+
+            mockKvStore.get.mockImplementation(async key => analyses.find(a => a.id === key));
+
+            const result = await service.listAnalyses(orgId, { status: 'completed', limit: 10 });
+            expect(result.items.every(item => item.status === 'completed')).toBe(true);
+        });
+
+        it('should handle cursor-based pagination', async () => {
+            const analyses = [
+                createDummyAnalysis({ id: 'analysis-1', createdAt: '2024-01-01T00:00:00Z' }),
+                createDummyAnalysis({ id: 'analysis-2', createdAt: '2024-01-02T00:00:00Z' }),
+                createDummyAnalysis({ id: 'analysis-3', createdAt: '2024-01-03T00:00:00Z' }),
+            ];
+
+            mockKvStore.get.mockImplementation(async key => analyses.find(a => a.id === key));
+
+            const result = await service.listAnalyses(orgId, {
+                limit: 2,
+                cursor: '2024-01-02T00:00:00Z',
+            });
+
+            expect(result.items).toHaveLength(1);
+            expect(result.items[0].id).toBe('analysis-1');
+            expect(result.nextCursor).toBeUndefined();
+        });
+
+        it('should handle scan errors gracefully', async () => {
+            jest.spyOn(service as any, 'scanKeys').mockRejectedValue(new Error('Scan failed'));
+            await expect(service.listAnalyses(orgId, { limit: 10 })).rejects.toThrow(InternalError);
+        });
+    });
+
+    describe('error handling', () => {
+        const analysis = createDummyAnalysis();
+
+        beforeEach(() => {
+            mockKvStore.get.mockResolvedValue(analysis);
+            mockKvStore.set.mockResolvedValue(undefined);
+        });
+
+        it('should handle storage errors during get', async () => {
+            const error = new Error('Storage error');
+            mockKvStore.get.mockRejectedValue(error);
+
+            await expect(service.getAnalysis('org-123', 'analysis-123')).rejects.toThrow(InternalError);
+
+            expect(logger.error).toHaveBeenCalledWith('Failed to get analysis', expect.objectContaining({ error }));
+        });
+
+        it('should handle storage errors during set', async () => {
+            const error = new Error('Storage error');
+            mockKvStore.set.mockRejectedValue(error);
+
+            await expect(service.createAnalysis('org-123', dummyRequest)).rejects.toThrow(InternalError);
+
+            expect(logger.error).toHaveBeenCalledWith('Failed to create analysis', expect.objectContaining({ error }));
+        });
+
+        it('should handle not found errors during updates', async () => {
+            mockKvStore.get.mockResolvedValue(null);
+
+            await expect(service.getAnalysis('org-123', 'analysis-123')).rejects.toThrow(NotFoundError);
+
+            expect(logger.error).not.toHaveBeenCalled();
+        });
+
+        it('should handle scan errors in listAnalyses', async () => {
+            jest.spyOn(service as any, 'scanKeys').mockRejectedValue(new Error('Scan failed'));
+
+            await expect(service.listAnalyses('org-123', { limit: 10 })).rejects.toThrow(InternalError);
+
+            expect(logger.error).toHaveBeenCalledWith('Failed to list analyses', expect.any(Object));
+        });
+
+        it('should handle empty results in listAnalyses', async () => {
+            jest.spyOn(service as any, 'scanKeys').mockResolvedValue([]);
+            mockKvStore.get.mockResolvedValue(null);
+
+            const result = await service.listAnalyses('org-123', { limit: 10 });
+            expect(result.items).toEqual([]);
+            expect(result.nextCursor).toBeUndefined();
+        });
+
+        it('should handle invalid status filter in listAnalyses', async () => {
+            jest.spyOn(service as any, 'scanKeys').mockResolvedValue(['analysis-1']);
+            mockKvStore.get.mockResolvedValue({
+                ...analysis,
+                status: 'completed',
+            });
+
+            const result = await service.listAnalyses('org-123', {
+                status: 'pending',
+                limit: 10,
+            });
+            expect(result.items).toHaveLength(0);
         });
     });
 });
