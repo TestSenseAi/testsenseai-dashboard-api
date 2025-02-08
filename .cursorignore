@@ -1,6 +1,7 @@
 node_modules
 .gitignore
 .cursorignore
+.cursor
 docs/docs
 docs/examples
 docs/jest

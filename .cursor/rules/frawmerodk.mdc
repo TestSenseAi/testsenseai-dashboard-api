@@ -7,6 +7,6 @@ globs: @src/docs/docs/
 
 - You can @ files here
 - You can use markdown but dont have to
-- In folder docs/docs/docs there is the documentation of Nitric. 
-- In the folder docs/examples/ there is examples from Nitric.
+- In folder docs/nitricDocs/docs there is the documentation of Nitric. 
+- In the folder docs/nitricExamples/v1/ there is examples from Nitric.
 

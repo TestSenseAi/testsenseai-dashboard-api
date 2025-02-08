@@ -2,9 +2,9 @@
 description: all nitric examples
 globs: docs/node-sdk-main/**/*test.ts
 ---
-
 # Your rule content
 
 - You can @ files here
 - You can use markdown but dont have to
-
+- In folder docs/nitricDocs/docs there is the documentation of Nitric. 
+- In the folder docs/nitricExamples/v1/ there is examples from Nitric.
