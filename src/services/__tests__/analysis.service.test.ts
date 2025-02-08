@@ -451,5 +451,25 @@ describe('AnalysisService', () => {
             });
             expect(result.items).toHaveLength(0);
         });
+        it('should update analysis status to completed even if notification fails', async () => {
+            const orgId = 'org-123';
+            // Simulate a failure in the notification service
+            jest.spyOn(notificationService, 'notifyAnalysisComplete').mockRejectedValue(
+                new Error('Notification failure')
+            );
+            // Spy on error logging (assuming the service uses console.error for logging)
+            const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+            mockKvStore.set.mockResolvedValue(undefined);
+
+            const analysis = await service.createAnalysis(orgId, dummyRequest);
+
+            // Validate that analysis status is updated to 'completed'
+            expect(analysis.status).toEqual('completed');
+            // Validate that the error was logged
+            expect(consoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining('Notification failure'));
+
+            consoleErrorSpy.mockRestore();
+        });
     });
 });
