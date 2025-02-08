@@ -131,5 +131,7 @@ dist
 
 
 # Nitric Documentation Folders
-docs/docs
-docs/examples
+docs/nitricDocs
+docs/node-sdk-main
+docs/nitricExamples
+docs/nitricTesting.md

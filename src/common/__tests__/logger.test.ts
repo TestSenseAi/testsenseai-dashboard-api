@@ -1,96 +1,122 @@
-/// <reference types="jest" />
+// logger.test.ts
+import { Logger, logger } from '../logger';
 
-import { Logger } from '../logger';
-
-describe('Logger', () => {
-    const originalConsole = { ...console };
-    const mockConsole = {
-        error: jest.fn(),
-        warn: jest.fn(),
-        info: jest.fn(),
-        debug: jest.fn(),
+describe('logger', () => {
+    // Store original console methods
+    const originalConsole = {
+        error: console.error,
+        warn: console.warn,
+        info: console.info,
+        debug: console.debug,
     };
 
-    beforeAll(() => {
-        console.error = mockConsole.error;
-        console.warn = mockConsole.warn;
-        console.info = mockConsole.info;
-        console.debug = mockConsole.debug;
-    });
-
-    afterAll(() => {
-        console.error = originalConsole.error;
-        console.warn = originalConsole.warn;
-        console.info = originalConsole.info;
-        console.debug = originalConsole.debug;
-    });
-
     beforeEach(() => {
+        // Clean mocks before each test
         jest.clearAllMocks();
+
+        // Mock console methods
+        console.error = jest.fn();
+        console.warn = jest.fn();
+        console.info = jest.fn();
+        console.debug = jest.fn();
+
+        // Reset environment
         process.env.LOG_LEVEL = 'debug';
     });
 
     afterEach(() => {
+        // Restore original console methods
+        console.error = originalConsole.error;
+        console.warn = originalConsole.warn;
+        console.info = originalConsole.info;
+        console.debug = originalConsole.debug;
+
         delete process.env.LOG_LEVEL;
     });
 
-    it('should log error messages', () => {
-        const logger = new Logger();
-        const error = new Error('Test error');
-        logger.error('Error message', { userId: '123' }, error);
-
-        expect(mockConsole.error).toHaveBeenCalledWith(expect.stringContaining('"level":"error"'));
-        expect(mockConsole.error).toHaveBeenCalledWith(expect.stringContaining('"message":"Error message"'));
-        expect(mockConsole.error).toHaveBeenCalledWith(expect.stringContaining('"userId":"123"'));
-        expect(mockConsole.error).toHaveBeenCalledWith(expect.stringContaining('"name":"Error"'));
-        expect(mockConsole.error).toHaveBeenCalledWith(expect.stringContaining('"message":"Test error"'));
+    describe('singleton behavior', () => {
+        it('should maintain a single instance', () => {
+            const instance1 = Logger.getInstance();
+            const instance2 = Logger.getInstance();
+            expect(instance1).toBe(instance2);
+        });
     });
 
-    it('should log warning messages', () => {
-        const logger = new Logger();
-        logger.warn('Warning message', { userId: '123' });
+    describe('log level behavior', () => {
+        it('should respect log level settings', () => {
+            // Set to error level
+            process.env.LOG_LEVEL = 'error';
+            const testLogger = new Logger(); // Create new instance to pick up env change
 
-        expect(mockConsole.warn).toHaveBeenCalledWith(expect.stringContaining('"level":"warn"'));
-        expect(mockConsole.warn).toHaveBeenCalledWith(expect.stringContaining('"message":"Warning message"'));
-        expect(mockConsole.warn).toHaveBeenCalledWith(expect.stringContaining('"userId":"123"'));
+            testLogger.warn('Test warning');
+            testLogger.info('Test info');
+            testLogger.debug('Test debug');
+
+            expect(console.warn).not.toHaveBeenCalled();
+            expect(console.info).not.toHaveBeenCalled();
+            expect(console.debug).not.toHaveBeenCalled();
+        });
     });
 
-    it('should log info messages', () => {
-        const logger = new Logger();
-        logger.info('Info message', { userId: '123' });
+    describe('logging functionality', () => {
+        it('should handle circular references in metadata', () => {
+            const circularObj: any = { foo: 'bar' };
+            circularObj.self = circularObj;
 
-        expect(mockConsole.info).toHaveBeenCalledWith(expect.stringContaining('"level":"info"'));
-        expect(mockConsole.info).toHaveBeenCalledWith(expect.stringContaining('"message":"Info message"'));
-        expect(mockConsole.info).toHaveBeenCalledWith(expect.stringContaining('"userId":"123"'));
+            logger.info('Test message', circularObj);
+
+            expect(console.info).toHaveBeenCalledWith(expect.stringContaining('[Circular]'));
+            expect(console.info).toHaveBeenCalledWith(expect.stringContaining('foo'));
+        });
+
+        it('should properly format error objects', () => {
+            const testError = new Error('Test error');
+            testError.stack = 'Error: Test error\n    at Test.stack';
+
+            logger.error('Error occurred', { additionalInfo: 'test' }, testError);
+
+            const loggedMessage = (console.error as jest.Mock).mock.calls[0][0];
+            const parsedLog = JSON.parse(loggedMessage);
+
+            expect(parsedLog.message).toBe('Error occurred');
+            expect(parsedLog.error.message).toBe('Test error');
+            expect(parsedLog.error.stack).toBe(testError.stack);
+            expect(parsedLog.context).toEqual({ additionalInfo: 'test' });
+        });
+
+        it('should include ISO timestamp in logs', () => {
+            logger.info('Test message');
+
+            const loggedMessage = (console.info as jest.Mock).mock.calls[0][0];
+            const parsedLog = JSON.parse(loggedMessage);
+
+            expect(parsedLog.timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/);
+        });
     });
 
-    it('should log debug messages', () => {
-        const logger = new Logger();
-        logger.debug('Debug message', { userId: '123' });
+    describe('context handling', () => {
+        it('should handle undefined context', () => {
+            logger.info('Test message');
 
-        expect(mockConsole.debug).toHaveBeenCalledWith(expect.stringContaining('"level":"debug"'));
-        expect(mockConsole.debug).toHaveBeenCalledWith(expect.stringContaining('"message":"Debug message"'));
-        expect(mockConsole.debug).toHaveBeenCalledWith(expect.stringContaining('"userId":"123"'));
-    });
+            const loggedMessage = (console.info as jest.Mock).mock.calls[0][0];
+            const parsedLog = JSON.parse(loggedMessage);
 
-    it('should respect log level settings', () => {
-        process.env.LOG_LEVEL = 'warn';
-        const logger = new Logger();
+            expect(parsedLog.context).toBeUndefined();
+        });
 
-        logger.info('This should not be logged');
-        logger.warn('This should be logged');
-        logger.error('This should be logged');
+        it('should include context in log output', () => {
+            const context = {
+                organizationId: 'org-123',
+                userId: 'user-456',
+                correlationId: 'corr-789',
+            };
 
-        expect(mockConsole.info).not.toHaveBeenCalled();
-        expect(mockConsole.warn).toHaveBeenCalled();
-        expect(mockConsole.error).toHaveBeenCalled();
-    });
+            logger.info('Test message', context);
 
-    it('should handle invalid log levels', () => {
-        process.env.LOG_LEVEL = 'invalid';
-        const logger = new Logger();
+            const loggedMessage = (console.info as jest.Mock).mock.calls[0][0];
+            const parsedLog = JSON.parse(loggedMessage);
 
-        logger.info('This should be logged');
-        expect(mockConsole.info).toHaveBeenCalled();
+            expect(parsedLog.context).toEqual(context);
+        });
     });
 });

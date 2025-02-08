@@ -1,0 +1,12 @@
+---
+description: Nitric Doc
+globs: @src/docs/docs/
+---
+
+# Your rule content
+
+- You can @ files here
+- You can use markdown but dont have to
+- In folder docs/docs/docs there is the documentation of Nitric. 
+- In the folder docs/examples/ there is examples from Nitric.
+

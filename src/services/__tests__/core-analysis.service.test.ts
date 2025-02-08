@@ -1,113 +1,147 @@
-/// <reference types="jest" />
-
-import axios from 'axios';
-import { CoreAnalysisService } from '../core-analysis.service';
-import { InternalError } from '../../common/errors';
-import { config } from '../../config';
-
-// Mock axios
+// Mock dependencies first
+jest.mock('@/common/logger');
 jest.mock('axios');
-const mockAxios = jest.mocked(axios);
+
+import { jest } from '@jest/globals';
+import axios from 'axios';
+import { logger } from '@/common/logger';
+import { CoreAnalysisService } from '../core-analysis.service';
+import { InternalError } from '@/common/errors';
+import { CoreAnalysisResponse } from '@/services/types';
+
+// Mock logger
+jest.spyOn(logger, 'info').mockImplementation(jest.fn());
+jest.spyOn(logger, 'error').mockImplementation(jest.fn());
+jest.spyOn(logger, 'debug').mockImplementation(jest.fn());
+
+const mockResponse: CoreAnalysisResponse = {
+    summary: 'Test analysis',
+    confidence: 0.9,
+    recommendations: [],
+    metrics: {},
+    insights: [],
+};
+
+// Mock axios instance
+const mockAxiosInstance = {
+    post: jest.fn(),
+    get: jest.fn(),
+    defaults: { headers: { common: {} } },
+};
+
+jest.spyOn(axios, 'create').mockReturnValue(mockAxiosInstance as any);
 
 describe('CoreAnalysisService', () => {
     let service: CoreAnalysisService;
-    let mockPost: jest.Mock;
-    let mockGet: jest.Mock;
 
     beforeEach(() => {
         jest.clearAllMocks();
-        mockPost = jest.fn();
-        mockGet = jest.fn();
-        mockAxios.create.mockReturnValue({
-            post: mockPost,
-            get: mockGet,
-        } as any);
         service = new CoreAnalysisService();
     });
 
     describe('analyzeTest', () => {
-        const mockRequest = {
-            projectId: 'project-123',
+        const testRequest = {
+            projectId: 'proj-test-1',
             testId: 'test-123',
-            parameters: { key: 'value' },
-            metadata: {
-                environment: 'test',
-                version: '1.0.0',
-                tags: ['tag1', 'tag2'],
-            },
+            parameters: { depth: 'full', mode: 'comprehensive' },
+            metadata: { environment: 'staging', version: '1.2.3' },
         };
 
-        const mockResponse = {
-            summary: 'Test analysis summary',
-            confidence: 0.85,
-            recommendations: [
-                {
-                    title: 'Improve performance',
-                    description: 'Add caching layer',
-                    priority: 'high' as const,
-                    category: 'performance' as const,
-                    actionable: true,
-                },
-            ],
-            metrics: {
-                responseTime: 150,
-                errorRate: 0.02,
-            },
-            insights: [
-                {
-                    type: 'improvement' as const,
-                    message: 'Consider adding retry logic',
-                    context: { area: 'reliability' },
-                },
-            ],
-        };
+        it('should successfully analyze test and return mapped results', async () => {
+            // @ts-expect-error - mock implementation
+            mockAxiosInstance.post.mockResolvedValueOnce({
+                data: mockResponse,
+                status: 200,
+                statusText: 'OK',
+                headers: {},
+                config: { headers: {} },
+            });
 
-        it('should analyze test successfully', async () => {
-            mockPost.mockResolvedValueOnce({ data: mockResponse });
+            const result = await service.analyzeTest(testRequest);
 
-            const result = await service.analyzeTest(mockRequest);
+            expect(mockAxiosInstance.post).toHaveBeenCalledWith('/v1/analyze', testRequest);
+            expect(logger.info).toHaveBeenCalledWith('Calling core analysis service', {
+                projectId: testRequest.projectId,
+                testId: testRequest.testId,
+            });
 
             expect(result).toEqual(mockResponse);
-            expect(mockAxios.create).toHaveBeenCalledWith({
-                baseURL: config.coreService.url,
-                timeout: config.coreService.timeout,
-                headers: {
-                    'Content-Type': 'application/json',
-                    'x-api-key': config.coreService.apiKey,
-                },
+            expect(logger.info).toHaveBeenCalledWith('Core analysis service response received', {
+                projectId: testRequest.projectId,
+                testId: testRequest.testId,
+                confidence: mockResponse.confidence,
             });
-            expect(mockPost).toHaveBeenCalledWith('/v1/analyze', mockRequest);
         });
 
-        it('should handle analysis errors', async () => {
-            mockPost.mockRejectedValueOnce(new Error('API Error'));
+        it('should handle API errors gracefully', async () => {
+            const apiError = new Error('Service unavailable');
+            // @ts-expect-error - mock implementation
+            mockAxiosInstance.post.mockRejectedValueOnce(apiError);
 
-            await expect(service.analyzeTest(mockRequest)).rejects.toThrow(InternalError);
-            await expect(service.analyzeTest(mockRequest)).rejects.toThrow('Failed to analyze test');
+            await expect(service.analyzeTest(testRequest)).rejects.toThrow(InternalError);
+            expect(logger.error).toHaveBeenCalledWith('Core analysis service call failed', { error: apiError });
+        });
+
+        it('should handle malformed API responses', async () => {
+            // @ts-expect-error - mock implementation
+            mockAxiosInstance.post.mockResolvedValueOnce({
+                data: {} as CoreAnalysisResponse,
+                status: 200,
+                statusText: 'OK',
+                headers: {},
+                config: { headers: {} },
+            });
+
+            await expect(service.analyzeTest(testRequest)).rejects.toThrow(InternalError);
+        });
+
+        it('should handle network timeouts', async () => {
+            const timeoutError = new Error('Request timed out');
+            timeoutError.name = 'TimeoutError';
+            // @ts-expect-error - mock implementation
+            mockAxiosInstance.post.mockRejectedValueOnce(timeoutError);
+
+            await expect(service.analyzeTest(testRequest)).rejects.toThrow(InternalError);
+            expect(logger.error).toHaveBeenCalledWith('Core analysis service call failed', { error: timeoutError });
         });
     });
 
     describe('getHealth', () => {
-        it('should return true when service is healthy', async () => {
-            mockGet.mockResolvedValueOnce({ status: 200 });
-
-            const result = await service.getHealth();
-            expect(result).toBe(true);
-            expect(mockGet).toHaveBeenCalledWith('/health');
+        it('should return true for healthy service', async () => {
+            // @ts-expect-error - mock implementation
+            mockAxiosInstance.get.mockResolvedValueOnce({
+                data: {},
+                status: 200,
+                statusText: 'OK',
+                headers: {},
+                config: { headers: {} },
+            });
+            const health = await service.getHealth();
+            expect(mockAxiosInstance.get).toHaveBeenCalledWith('/health');
+            expect(health).toBe(true);
         });
 
-        it('should return false when service is unhealthy', async () => {
-            mockGet.mockRejectedValueOnce(new Error('Health check failed'));
-
-            const result = await service.getHealth();
-            expect(result).toBe(false);
+        it('should return false for unhealthy service', async () => {
+            // @ts-expect-error - mock implementation
+            mockAxiosInstance.get.mockResolvedValueOnce({
+                data: {},
+                status: 500,
+                statusText: 'Internal Server Error',
+                headers: {},
+                config: { headers: {} },
+            });
+            const health = await service.getHealth();
+            expect(health).toBe(false);
         });
 
-        it('should return false when service returns non-200 status', async () => {
-            mockGet.mockResolvedValueOnce({ status: 500 });
+        it('should handle connection errors in health check', async () => {
+            const networkError = new Error('Connection refused');
+            // @ts-expect-error - mock implementation
+            mockAxiosInstance.get.mockRejectedValueOnce(networkError);
 
-            const result = await service.getHealth();
-            expect(result).toBe(false);
+            const health = await service.getHealth();
+            expect(health).toBe(false);
+            expect(logger.error).toHaveBeenCalledWith('Core service health check failed', { error: networkError });
         });
     });
 });

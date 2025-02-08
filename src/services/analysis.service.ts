@@ -149,8 +149,8 @@ export class AnalysisService {
             const result = await this.coreAnalysisService.analyzeTest({
                 projectId: analysis.context.projectId,
                 testId: analysis.context.testId,
-                parameters: analysis.context.parameters,
-                metadata: analysis.context.metadata,
+                parameters: analysis.context.parameters || {},
+                metadata: analysis.context.metadata || {},
             });
 
             // Update analysis with results
@@ -158,10 +158,17 @@ export class AnalysisService {
 
             // Send notification if requested
             if (analysis.options?.notifyOnCompletion) {
-                await this.notificationService.notifyAnalysisComplete(analysis.orgId, analysis.id, {
-                    summary: result.summary,
-                    recommendations: result.recommendations,
-                });
+                try {
+                    await this.notificationService.notifyAnalysisComplete(analysis.orgId, analysis.id, {
+                        summary: result.summary,
+                        recommendations: result.recommendations,
+                    });
+                } catch (notificationError) {
+                    logger.error('Failed to send analysis completion notification', {
+                        analysisId: analysis.id,
+                        error: notificationError,
+                    });
+                }
             }
         } catch (error) {
             const errorDetails = {
@@ -173,7 +180,18 @@ export class AnalysisService {
             await this.updateAnalysisError(analysis.id, errorDetails);
 
             if (analysis.options?.notifyOnCompletion) {
-                await this.notificationService.notifyAnalysisFailed(analysis.orgId, analysis.id, errorDetails.message);
+                try {
+                    await this.notificationService.notifyAnalysisFailed(
+                        analysis.orgId,
+                        analysis.id,
+                        errorDetails.message
+                    );
+                } catch (notificationError) {
+                    logger.error('Failed to send analysis failure notification', {
+                        analysisId: analysis.id,
+                        error: notificationError,
+                    });
+                }
             }
 
             throw error;
@@ -227,6 +245,20 @@ export class AnalysisService {
         } catch (error) {
             logger.error('Failed to scan keys', { error });
             throw new InternalError('Failed to scan keys');
+        }
+    }
+
+    private async notifyAnalysisComplete(analysis: Analysis, result: AnalysisResult['result']): Promise<void> {
+        try {
+            await this.notificationService.notifyAnalysisComplete(analysis.orgId, analysis.id, {
+                summary: result?.summary,
+                recommendations: result?.recommendations,
+            });
+        } catch (error) {
+            logger.error('Failed to send analysis completion notification', {
+                analysisId: analysis.id,
+                error,
+            });
         }
     }
 }

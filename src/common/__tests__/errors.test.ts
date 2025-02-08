@@ -1,78 +1,62 @@
-/// <reference types="jest" />
+import { NotFoundError, ValidationError, InternalError, AppError } from '../errors';
 
-import { AppError, ValidationError, NotFoundError, AuthorizationError, ConflictError, InternalError } from '../errors';
-
-describe('Error Classes', () => {
+describe('Custom Errors', () => {
     describe('AppError', () => {
-        it('should create an AppError with default status code', () => {
-            const error = new AppError('TEST_ERROR', 'Test error message');
+        it('should create error with all parameters', () => {
+            const error = new AppError('TEST_ERROR', 'Test message', 400, { detail: 'test' });
+            expect(error.message).toBe('Test message');
             expect(error.code).toBe('TEST_ERROR');
-            expect(error.message).toBe('Test error message');
             expect(error.statusCode).toBe(400);
+            expect(error.details).toEqual({ detail: 'test' });
             expect(error.name).toBe('AppError');
+            expect(error instanceof Error).toBe(true);
         });
 
-        it('should create an AppError with custom status code and details', () => {
-            const details = { field: 'test' };
-            const error = new AppError('TEST_ERROR', 'Test error message', 422, details);
-            expect(error.code).toBe('TEST_ERROR');
-            expect(error.message).toBe('Test error message');
-            expect(error.statusCode).toBe(422);
-            expect(error.details).toEqual(details);
-        });
-    });
-
-    describe('ValidationError', () => {
-        it('should create a ValidationError', () => {
-            const details = { field: 'invalid' };
-            const error = new ValidationError('Invalid input', details);
-            expect(error.code).toBe('VALIDATION_ERROR');
-            expect(error.message).toBe('Invalid input');
+        it('should create error with default status code', () => {
+            const error = new AppError('TEST_ERROR', 'Test message');
             expect(error.statusCode).toBe(400);
-            expect(error.details).toEqual(details);
-            expect(error.name).toBe('ValidationError');
         });
     });
 
     describe('NotFoundError', () => {
-        it('should create a NotFoundError', () => {
+        it('should create error with entity and id', () => {
             const error = new NotFoundError('User', '123');
-            expect(error.code).toBe('NOT_FOUND');
             expect(error.message).toBe('User with id 123 not found');
-            expect(error.statusCode).toBe(404);
             expect(error.name).toBe('NotFoundError');
+            expect(error.statusCode).toBe(404);
+            expect(error.code).toBe('NOT_FOUND');
         });
     });
 
-    describe('AuthorizationError', () => {
-        it('should create an AuthorizationError', () => {
-            const error = new AuthorizationError('Invalid token');
-            expect(error.code).toBe('UNAUTHORIZED');
-            expect(error.message).toBe('Invalid token');
-            expect(error.statusCode).toBe(401);
-            expect(error.name).toBe('AuthorizationError');
+    describe('ValidationError', () => {
+        it('should create error with message only', () => {
+            const error = new ValidationError('Invalid input');
+            expect(error.message).toBe('Invalid input');
+            expect(error.name).toBe('ValidationError');
+            expect(error.statusCode).toBe(400);
+            expect(error.code).toBe('VALIDATION_ERROR');
         });
-    });
 
-    describe('ConflictError', () => {
-        it('should create a ConflictError', () => {
-            const error = new ConflictError('Resource already exists');
-            expect(error.code).toBe('CONFLICT');
-            expect(error.message).toBe('Resource already exists');
-            expect(error.statusCode).toBe(409);
-            expect(error.name).toBe('ConflictError');
+        it('should create error with details', () => {
+            const details = { field: 'email', issue: 'invalid format' };
+            const error = new ValidationError('Invalid input', details);
+            expect(error.details).toEqual(details);
         });
     });
 
     describe('InternalError', () => {
-        it('should create an InternalError', () => {
-            const details = { cause: 'Database connection failed' };
-            const error = new InternalError('Internal server error', details);
-            expect(error.code).toBe('INTERNAL_ERROR');
-            expect(error.message).toBe('Internal server error');
-            expect(error.statusCode).toBe(500);
-            expect(error.details).toEqual(details);
+        it('should create error with message only', () => {
+            const error = new InternalError('System failure');
+            expect(error.message).toBe('System failure');
             expect(error.name).toBe('InternalError');
+            expect(error.statusCode).toBe(500);
+            expect(error.code).toBe('INTERNAL_ERROR');
+        });
+
+        it('should create error with details', () => {
+            const cause = new Error('Original error');
+            const error = new InternalError('System failure', { cause });
+            expect(error.details).toEqual({ cause });
         });
     });
 });

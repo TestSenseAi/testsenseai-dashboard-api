@@ -17,9 +17,17 @@ export class ValidationError extends AppError {
     }
 }
 
+/**
+ * Custom error class representing a "Not Found" error.
+ */
 export class NotFoundError extends AppError {
-    constructor(resource: string, id: string) {
-        super('NOT_FOUND', `${resource} with id ${id} not found`, 404);
+    /**
+     * Creates a new instance of the NotFoundError class.
+     * @param entity The type of entity that was not found.
+     * @param id The ID of the entity that was not found.
+     */
+    constructor(entity: string, id: string) {
+        super('NOT_FOUND', `${entity} with id ${id} not found`, 404);
         this.name = 'NotFoundError';
     }
 }

@@ -44,8 +44,21 @@ export class Logger {
         return levels[level] <= levels[this.logLevel];
     }
 
+    private safeStringify(obj: any): string {
+        const seen = new WeakSet();
+        return JSON.stringify(obj, (key, value) => {
+            if (typeof value === 'object' && value !== null) {
+                if (seen.has(value)) {
+                    return '[Circular]';
+                }
+                seen.add(value);
+            }
+            return value;
+        });
+    }
+
     private formatLog(entry: LogEntry): string {
-        return JSON.stringify({
+        return this.safeStringify({
             ...entry,
             error: entry.error
                 ? {

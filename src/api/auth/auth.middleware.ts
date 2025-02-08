@@ -2,7 +2,7 @@ import { jwtDecode } from 'jwt-decode';
 import { z } from 'zod';
 
 // JWT Claims schema
-const JwtClaims = z.object({
+const JwtClaimsSchema = z.object({
     sub: z.string(),
     org_id: z.string(),
     email: z.string().email(),
@@ -10,7 +10,10 @@ const JwtClaims = z.object({
     exp: z.number(),
 });
 
-type JwtClaims = z.infer<typeof JwtClaims>;
+type JwtClaims = z.infer<typeof JwtClaimsSchema>;
+
+// Define JwtClaims from the schema
+// type JwtClaims = z.infer<typeof JwtClaimsSchema>; // Uncomment and adjust if needed
 
 export class AuthError extends Error {
     constructor(
@@ -31,7 +34,7 @@ export async function validateAuth(authToken: string): Promise<JwtClaims> {
 
     try {
         const claims = jwtDecode<JwtClaims>(token);
-        const result = JwtClaims.safeParse(claims);
+        const result = JwtClaimsSchema.safeParse(claims);
 
         if (!result.success) {
             throw new AuthError('Invalid token claims');

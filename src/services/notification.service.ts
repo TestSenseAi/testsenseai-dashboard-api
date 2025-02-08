@@ -1,3 +1,4 @@
+// notification.service.ts
 import { websocket } from '@nitric/sdk';
 import { logger } from '../common/logger';
 import { InternalError } from '../common/errors';
@@ -14,7 +15,19 @@ interface NotificationPayload {
 }
 
 export class NotificationService {
-    private socket = websocket('realtime');
+    private static instance: NotificationService | null = null;
+    private socket: ReturnType<typeof websocket>;
+
+    private constructor() {
+        this.socket = websocket('realtime');
+    }
+
+    public static getInstance(): NotificationService {
+        if (!NotificationService.instance) {
+            NotificationService.instance = new NotificationService();
+        }
+        return NotificationService.instance;
+    }
 
     public async notifyAnalysisComplete(orgId: string, analysisId: string, result: unknown): Promise<void> {
         try {
@@ -58,10 +71,7 @@ export class NotificationService {
 
     private async notifyOrganization(orgId: string, payload: NotificationPayload): Promise<void> {
         try {
-            // Get all connections for the organization
             const connections = await this.getOrganizationConnections();
-
-            // Send notification to all connected clients
             await Promise.all(connections.map(connectionId => this.socket.send(connectionId, JSON.stringify(payload))));
         } catch (error) {
             logger.error('Failed to notify organization', { orgId, error });
