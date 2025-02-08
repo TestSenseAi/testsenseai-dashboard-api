@@ -162,6 +162,7 @@ describe('AnalysisService', () => {
         it('should process analysis and notify on completion', async () => {
             coreAnalysisService.analyzeTest.mockResolvedValue(dummyAnalysisResult);
 
+            // Wait for the processAnalysis method to complete
             await (service as any).processAnalysis(analysis);
 
             expect(mockKvStore.set).toHaveBeenCalledWith(
@@ -453,22 +454,33 @@ describe('AnalysisService', () => {
         });
         it('should update analysis status to completed even if notification fails', async () => {
             // Simulate a failure in the notification service
-            jest.spyOn(notificationService, 'notifyAnalysisComplete').mockRejectedValue(
-                new Error('Notification failure')
-            );
-            // Spy on error logging (assuming the service uses console.error for logging)
-            const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+            notificationService.notifyAnalysisComplete.mockRejectedValue(new Error('Notification failure'));
 
+            // Mock successful analysis creation with initial pending status
+            const analysis = createDummyAnalysis(); // Will have pending status by default
             mockKvStore.set.mockResolvedValue(undefined);
+            mockKvStore.get.mockResolvedValue(analysis);
 
-            const analysis = await service.createAnalysis('org-123', dummyRequest);
+            // Call service method
+            const result = await service.createAnalysis('org-123', dummyRequest);
+            await (service as any).processAnalysis(analysis);
 
-            // Validate that analysis status is updated to 'completed'
-            expect(analysis.status).toEqual('completed');
-            // Validate that the error was logged
-            expect(consoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining('Notification failure'));
+            // Validate that analysis status is completed
+            expect(result.status).toEqual('pending'); // Initial status should be pending
+            expect(mockKvStore.set).toHaveBeenCalledWith(
+                analysis.id,
+                expect.objectContaining({
+                    status: 'completed', // Final status should be completed after processing
+                })
+            );
 
-            consoleErrorSpy.mockRestore();
+            // Verify notification failure was handled
+            expect(logger.error).toHaveBeenCalledWith(
+                expect.stringContaining('Failed to send analysis completion notification'),
+                expect.objectContaining({
+                    error: expect.any(Error),
+                })
+            );
         });
     });
 });
